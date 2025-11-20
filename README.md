@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shelby Breakpoint
+
+A Next.js project with Turso LibSQL database and Drizzle ORM, configured for Vercel deployment.
+
+## Tech Stack
+
+- **Next.js 16** - React framework with App Router
+- **Turso** - LibSQL database (SQLite-compatible)
+- **Drizzle ORM** - TypeScript ORM
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+ installed
+- A Turso account (sign up at [turso.tech](https://turso.tech))
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   pnpm install
+   ```
 
-## Learn More
+2. **Set up Turso database:**
 
-To learn more about Next.js, take a look at the following resources:
+   - Create a new database in the [Turso dashboard](https://turso.tech)
+   - Get your database URL and auth token
+   - Create a `.env.local` file in the root directory:
+     ```env
+     TURSO_DATABASE_URL=libsql://your-database-url.turso.io
+     TURSO_AUTH_TOKEN=your-auth-token-here
+     ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Run database migrations:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run db:push
+   ```
+
+   This will create the tables defined in `lib/db/schema.ts`.
+
+4. **Start the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Database Commands
+
+- `npm run db:generate` - Generate migration files from schema changes
+- `npm run db:migrate` - Run pending migrations
+- `npm run db:push` - Push schema changes directly to database (development)
+- `npm run db:studio` - Open Drizzle Studio to view and edit your database
+
+## Example API
+
+An example API route is available at `/api/users` that demonstrates:
+
+- `GET /api/users` - Fetch all users
+- `POST /api/users` - Create a new user
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push your code to GitHub
+2. Import your repository in [Vercel](https://vercel.com)
+3. Add your environment variables in Vercel dashboard:
+   - `TURSO_DATABASE_URL`
+   - `TURSO_AUTH_TOKEN`
+4. Deploy!
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The project is pre-configured for Vercel deployment with `vercel.json`.
+
+## Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Drizzle ORM Documentation](https://orm.drizzle.team)
+- [Turso Documentation](https://docs.turso.tech)
+- [Vercel Deployment Guide](https://vercel.com/docs)
