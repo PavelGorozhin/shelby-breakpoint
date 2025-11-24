@@ -63,10 +63,6 @@ export function VideoPlayerClient() {
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      // Set webkit-playsinline for older iOS versions
-      video.setAttribute("webkit-playsinline", "true");
-      video.setAttribute("playsinline", "true");
-
       // Reset and play the video
       video.load();
       const playPromise = video.play();
@@ -96,6 +92,8 @@ export function VideoPlayerClient() {
           muted
           loop
           playsInline
+          webkit-playsinline="true"
+          x-webkit-airplay="allow"
           crossOrigin=""
           className="w-full h-full object-cover"
         />
