@@ -1,7 +1,7 @@
 "use client";
 
 import { useSwipeable } from "react-swipeable";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   MediaController,
   MediaControlBar,
@@ -40,6 +40,7 @@ const videos: Video[] = [
 
 export function VideoPlayerClient() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleSwipeUp = () => {
     // Swipe up = go to previous video, or wrap to last if at the beginning
@@ -58,6 +59,23 @@ export function VideoPlayerClient() {
     trackMouse: true,
   });
 
+  // Ensure video plays on mobile
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      // Reset and play the video
+      video.load();
+      const playPromise = video.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          // Autoplay was prevented
+          console.log("Autoplay prevented:", error);
+        });
+      }
+    }
+  }, [currentIndex]);
+
   return (
     <div
       {...handlers}
@@ -65,6 +83,7 @@ export function VideoPlayerClient() {
     >
       <MediaController className="w-full h-full" suppressHydrationWarning>
         <video
+          ref={videoRef}
           key={videos[currentIndex].id}
           slot="media"
           src={videos[currentIndex].url}
@@ -73,6 +92,8 @@ export function VideoPlayerClient() {
           muted
           loop
           playsInline
+          webkit-playsinline="true"
+          x-webkit-airplay="allow"
           crossOrigin=""
           className="w-full h-full object-cover"
         />
