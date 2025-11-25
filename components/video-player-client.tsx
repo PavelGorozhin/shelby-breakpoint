@@ -1,7 +1,7 @@
 "use client";
 
 import { useSwipeable } from "react-swipeable";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   MediaController,
   MediaControlBar,
@@ -12,42 +12,70 @@ import {
   MediaMuteButton,
   MediaFullscreenButton,
 } from "media-chrome/react";
+import HLS from "hls.js";
+import { Video } from "@/db/schema";
 
-interface Video {
-  id: number;
-  url: string;
-  title: string;
-}
-
-// Mock video data - using sample videos
-const videos: Video[] = [
+// Default sample videos - always included
+const defaultVideos: Video[] = [
   {
-    id: 1,
+    id: -1,
+    fileId: "sample-1",
+    account: "",
     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    title: "Video 1",
+    createdAt: new Date(),
   },
   {
-    id: 2,
+    id: -2,
+    fileId: "sample-2",
+    account: "",
     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    title: "Video 2",
+    createdAt: new Date(),
   },
   {
-    id: 3,
+    id: -3,
+    fileId: "sample-3",
+    account: "",
     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    title: "Video 3",
+    createdAt: new Date(),
   },
 ];
 
-export function VideoPlayerClient() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+interface VideoPlayerClientProps {
+  videos: Video[];
+  initialVideoId?: string;
+}
+
+export function VideoPlayerClient({
+  videos: videosFromDb,
+  initialVideoId,
+}: VideoPlayerClientProps) {
+  // Combine DB videos with default videos (DB videos first)
+  const videos = useMemo(
+    () => [...videosFromDb, ...defaultVideos],
+    [videosFromDb]
+  );
+
+  // Find initial index based on fileId or id from query param
+  const initialIndex = useMemo(() => {
+    if (!initialVideoId || videos.length === 0) return 0;
+    const index = videos.findIndex(
+      (v) => v.fileId === initialVideoId || v.id.toString() === initialVideoId
+    );
+    return index >= 0 ? index : 0;
+  }, [initialVideoId, videos]);
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<HLS | null>(null);
 
   const handleSwipeUp = () => {
+    if (videos.length === 0) return;
     // Swipe up = go to previous video, or wrap to last if at the beginning
     setCurrentIndex((currentIndex - 1 + videos.length) % videos.length);
   };
 
   const handleSwipeDown = () => {
+    if (videos.length === 0) return;
     // Swipe down = go to next video, or wrap to first if at the end
     setCurrentIndex((currentIndex + 1) % videos.length);
   };
@@ -59,22 +87,56 @@ export function VideoPlayerClient() {
     trackMouse: true,
   });
 
-  // Ensure video plays on mobile
+  const currentVideo = videos[currentIndex];
+
+  // Setup HLS.js for .m3u8 streams or regular video (TODO: Replace with Shaka)
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
-      // Reset and play the video
-      video.load();
-      const playPromise = video.play();
+    if (!video || !currentVideo) return;
 
-      if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          // Autoplay was prevented
+    const url = currentVideo.url;
+    const isHLS = url.endsWith(".m3u8");
+
+    // Cleanup previous HLS instance
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    if (isHLS && HLS.isSupported()) {
+      const hls = new HLS();
+      hlsRef.current = hls;
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(HLS.Events.MANIFEST_PARSED, () => {
+        video.play().catch((error) => {
           console.log("Autoplay prevented:", error);
         });
-      }
+      });
+    } else if (isHLS && video.canPlayType("application/vnd.apple.mpegurl")) {
+      // Native HLS support (Safari)
+      video.src = url;
+      video.addEventListener("loadedmetadata", () => {
+        video.play().catch((error) => {
+          console.log("Autoplay prevented:", error);
+        });
+      });
+    } else {
+      // Regular video file
+      video.src = url;
+      video.load();
+      video.play().catch((error) => {
+        console.log("Autoplay prevented:", error);
+      });
     }
-  }, [currentIndex]);
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [currentIndex, currentVideo]);
 
   return (
     <div
@@ -84,9 +146,8 @@ export function VideoPlayerClient() {
       <MediaController className="w-full h-full" suppressHydrationWarning>
         <video
           ref={videoRef}
-          key={videos[currentIndex].id}
+          key={currentVideo.id}
           slot="media"
-          src={videos[currentIndex].url}
           preload="auto"
           autoPlay
           muted

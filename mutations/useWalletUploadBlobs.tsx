@@ -13,13 +13,13 @@ export type UseWalletUploadBlobsOptions = Omit<
   UseMutationOptions<void, Error, UseWalletUploadBlobsVariables>,
   "mutationFn"
 > & {
-  uploadOptions: Omit<UseUploadBlobsOptions, "client">;
+  uploadOptions?: Omit<UseUploadBlobsOptions, "client">;
 };
 
 export default function useWalletUploadBlobs({
   uploadOptions,
   ...options
-}: UseWalletUploadBlobsOptions) {
+}: UseWalletUploadBlobsOptions = {}) {
   const {
     account,
     signAndSubmitTransaction,
