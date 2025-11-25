@@ -14,7 +14,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       dappConfig={{
         network: Network.SHELBYNET,
         aptosApiKeys: {
-          shelbynet: process.env.NEXT_PUBLIC_SHELBYNET_API_KEY,
+          shelbynet: process.env.NEXT_PUBLIC_APTOS_SHELBYNET_API_KEY,
         },
         crossChainWallets: true,
       }}

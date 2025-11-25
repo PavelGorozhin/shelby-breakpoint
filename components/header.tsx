@@ -7,7 +7,8 @@ export function Header() {
   const router = useRouter();
 
   const handleUploadClick = () => {
-    router.push("/upload");
+    // Use window.location to force full page reload for COOP/COEP headers
+    window.location.href = "/upload";
   };
 
   return (
