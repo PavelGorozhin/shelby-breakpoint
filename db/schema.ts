@@ -19,6 +19,8 @@ export const videos = sqliteTable("videos", {
   fileId: text("file_id").notNull().unique(),
   account: text("account").notNull(),
   url: text("url").notNull(),
+  description: text("description"),
+  email: text("email").unique(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
