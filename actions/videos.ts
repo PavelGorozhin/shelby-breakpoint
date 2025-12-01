@@ -8,6 +8,8 @@ export type SaveVideoParams = {
   fileId: string;
   account: string;
   url: string;
+  description: string;
+  email: string;
 };
 
 export async function saveVideo(params: SaveVideoParams) {

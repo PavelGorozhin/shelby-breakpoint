@@ -45,10 +45,14 @@ export default function Upload() {
       mediaBlobUrl,
       fileId,
       accountAddress,
+      description,
+      email,
     }: {
       mediaBlobUrl: string;
       fileId: string;
       accountAddress: string;
+      description: string;
+      email: string;
     }) => {
       // Step 1: Transcode
       setUploadProgress("transcoding");
@@ -69,7 +73,13 @@ export default function Upload() {
         accountAddress,
         `${fileId}/master.m3u8`
       );
-      await saveVideo({ fileId, account: accountAddress, url });
+      await saveVideo({
+        fileId,
+        account: accountAddress,
+        url,
+        description,
+        email,
+      });
 
       return { fileId, url };
     },
@@ -98,7 +108,7 @@ export default function Upload() {
   };
 
   // Handle process and upload
-  const handleProcessAndUpload = () => {
+  const handleProcessAndUpload = (description: string, email: string) => {
     if (!mediaBlobUrl || !fileId || !account?.address) return;
 
     // Check if the account address is in the upload allowlist
@@ -120,7 +130,9 @@ export default function Upload() {
     processAndUpload({
       mediaBlobUrl,
       fileId,
-      accountAddress,
+      accountAddress: account.address.toString(),
+      description,
+      email,
     });
   };
 
@@ -139,6 +151,7 @@ export default function Upload() {
 
   // Full-screen layout for record and preview steps
   const isFullScreenStep = step === "record" || step === "preview";
+  console.log("step", step);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -169,7 +182,9 @@ export default function Upload() {
           {step === "preview" && mediaBlobUrl && (
             <VideoPreview
               mediaBlobUrl={mediaBlobUrl}
-              onConfirm={handleProcessAndUpload}
+              onConfirm={(description: string, email: string) =>
+                handleProcessAndUpload(description, email)
+              }
               onRetake={handleRetake}
               isProcessing={isProcessing}
               processingLabel="Processing..."
