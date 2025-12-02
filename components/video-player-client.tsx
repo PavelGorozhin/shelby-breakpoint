@@ -176,14 +176,6 @@ export function VideoPlayerClient({
 
       {/* Video actions - description, like, share, creator */}
       <VideoActions video={currentVideo} />
-
-      {/* Navigation hints - always show since it's infinite scroll */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/50 text-sm z-10 pointer-events-none">
-        ↑ Swipe up for previous
-      </div>
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 text-white/50 text-sm z-10 pointer-events-none">
-        ↓ Swipe down for next
-      </div>
     </div>
   );
 }
