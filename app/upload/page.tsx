@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { UploadHeader } from "@/components/upload-header";
 import { VideoPreview } from "@/components/video-preview";
 import useFfmpegWasm from "@/queries/useFfmpegWasm";
 import useTranscode from "@/mutations/useTranscode";
@@ -151,150 +150,157 @@ export default function Upload() {
 
   // Full-screen layout for record and preview steps
   const isFullScreenStep = step === "record" || step === "preview";
-  console.log("step", step);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden">
-      <UploadHeader />
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* FFmpeg Error - shown as overlay for full-screen steps */}
+        {ffmpegError && isFullScreenStep && (
+          <div className="absolute top-4 left-4 right-4 z-50 bg-destructive/90 backdrop-blur-sm border border-destructive rounded-lg p-4 space-y-2 max-w-md mx-auto md:left-[88px]">
+            <p className="text-destructive-foreground text-sm font-medium">
+              Failed to load FFmpeg
+            </p>
+            <p className="text-destructive-foreground/80 text-xs">
+              {ffmpegError.message}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => refetchFfmpeg()}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
 
-      {/* FFmpeg Error - shown as overlay for full-screen steps */}
-      {ffmpegError && isFullScreenStep && (
-        <div className="absolute top-20 left-4 right-4 z-50 bg-destructive/90 backdrop-blur-sm border border-destructive rounded-lg p-4 space-y-2 max-w-md mx-auto">
-          <p className="text-destructive-foreground text-sm font-medium">
-            Failed to load FFmpeg
-          </p>
-          <p className="text-destructive-foreground/80 text-xs">
-            {ffmpegError.message}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetchFfmpeg()}>
-            Retry
-          </Button>
-        </div>
-      )}
+        {/* Full-screen content for record/preview */}
+        {isFullScreenStep && (
+          <div className="md:flex-1 md:flex md:justify-center h-full overflow-scroll">
+            <div className="w-full md:max-w-md lg:max-w-lg flex flex-1 flex-col p-4 pb-24">
+              {step === "record" && (
+                <VideoRecorder onRecordingComplete={handleRecordingComplete} />
+              )}
 
-      {/* Full-screen content for record/preview */}
-      {isFullScreenStep && (
-        <div className="flex-1 flex flex-col overflow-hidden p-4 pb-6">
-          {step === "record" && (
-            <VideoRecorder onRecordingComplete={handleRecordingComplete} />
-          )}
+              {step === "preview" && mediaBlobUrl && (
+                <VideoPreview
+                  mediaBlobUrl={mediaBlobUrl}
+                  onConfirm={(description: string, email: string) =>
+                    handleProcessAndUpload(description, email)
+                  }
+                  onRetake={handleRetake}
+                  isProcessing={isProcessing}
+                  processingLabel="Processing..."
+                />
+              )}
+            </div>
+          </div>
+        )}
 
-          {step === "preview" && mediaBlobUrl && (
-            <VideoPreview
-              mediaBlobUrl={mediaBlobUrl}
-              onConfirm={(description: string, email: string) =>
-                handleProcessAndUpload(description, email)
-              }
-              onRetake={handleRetake}
-              isProcessing={isProcessing}
-              processingLabel="Processing..."
-            />
-          )}
-        </div>
-      )}
-
-      {/* Regular layout for other steps */}
-      {!isFullScreenStep && (
-        <div className="flex-1 overflow-auto bg-background p-8">
-          <div className="max-w-md mx-auto space-y-6">
-            {/* FFmpeg Error */}
-            {ffmpegError && (
-              <div className="bg-destructive/20 border border-destructive rounded p-4 space-y-2">
-                <p className="text-destructive text-sm font-medium">
-                  Failed to load FFmpeg
-                </p>
-                <p className="text-destructive/80 text-xs">
-                  {ffmpegError.message}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => refetchFfmpeg()}
-                >
-                  Retry
-                </Button>
-              </div>
-            )}
-
-            {/* Uploading Step */}
-            {step === "uploading" && (
-              <div className="space-y-4">
-                <h2 className="text-foreground text-xl">Uploading Video</h2>
-                <p className="text-muted-foreground text-sm">
-                  {getUploadProgressMessage(uploadProgress)}
-                </p>
-                <div className="aspect-9/16 max-h-[60vh] bg-card rounded-lg flex items-center justify-center mx-auto">
-                  <div className="text-center">
-                    <div className="w-12 h-12 mx-auto mb-3 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-muted-foreground text-sm">
-                      {getUploadProgressMessage(uploadProgress)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Complete Step */}
-            {step === "complete" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <CheckIcon className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <h2 className="text-foreground text-xl">Upload Complete!</h2>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Your video has been uploaded to Shelby.
-                </p>
-
-                {/* Video Preview */}
-                {mediaBlobUrl && (
-                  <div className="relative aspect-9/16 max-h-[50vh] bg-card rounded-lg overflow-hidden mx-auto">
-                    <video
-                      src={mediaBlobUrl}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    />
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      if (mediaBlobUrl) {
-                        URL.revokeObjectURL(mediaBlobUrl);
-                      }
-                      router.push(`/?id=${fileId}`);
-                    }}
-                    className="flex-1"
-                  >
-                    <PlayIcon className="w-4 h-4 mr-2" />
-                    Watch Video
-                  </Button>
+        {/* Regular layout for other steps */}
+        {!isFullScreenStep && (
+          <div className="flex-1 overflow-auto bg-background p-8 pb-20 md:pb-8 flex justify-center">
+            <div className="w-full md:max-w-md lg:max-w-lg space-y-6">
+              {/* FFmpeg Error */}
+              {ffmpegError && (
+                <div className="bg-destructive/20 border border-destructive rounded p-4 space-y-2">
+                  <p className="text-destructive text-sm font-medium">
+                    Failed to load FFmpeg
+                  </p>
+                  <p className="text-destructive/80 text-xs">
+                    {ffmpegError.message}
+                  </p>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      if (mediaBlobUrl) {
-                        URL.revokeObjectURL(mediaBlobUrl);
-                      }
-                      setStep("record");
-                      setFileId(null);
-                      setMediaBlobUrl(null);
-                      setUploadProgress("processing");
-                    }}
-                    className="flex-1"
+                    size="sm"
+                    onClick={() => refetchFfmpeg()}
                   >
-                    Upload Another
+                    Retry
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Uploading Step */}
+              {step === "uploading" && (
+                <div className="space-y-4">
+                  <h2 className="text-foreground text-xl">Uploading Video</h2>
+                  <p className="text-muted-foreground text-sm">
+                    {getUploadProgressMessage(uploadProgress)}
+                  </p>
+                  <div className="aspect-9/16 max-h-[60vh] bg-card rounded-lg flex items-center justify-center mx-auto">
+                    <div className="text-center">
+                      <div className="w-12 h-12 mx-auto mb-3 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                      <p className="text-muted-foreground text-sm">
+                        {getUploadProgressMessage(uploadProgress)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Complete Step */}
+              {step === "complete" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                      <CheckIcon className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <h2 className="text-foreground text-xl">
+                      Upload Complete!
+                    </h2>
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    Your video has been uploaded to Shelby.
+                  </p>
+
+                  {/* Video Preview */}
+                  {mediaBlobUrl && (
+                    <div className="relative aspect-9/16 max-h-[50vh] bg-card rounded-lg overflow-hidden mx-auto">
+                      <video
+                        src={mediaBlobUrl}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => {
+                        if (mediaBlobUrl) {
+                          URL.revokeObjectURL(mediaBlobUrl);
+                        }
+                        router.push(`/?id=${fileId}`);
+                      }}
+                      className="flex-1"
+                    >
+                      <PlayIcon className="w-4 h-4 mr-2" />
+                      Watch Video
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (mediaBlobUrl) {
+                          URL.revokeObjectURL(mediaBlobUrl);
+                        }
+                        setStep("record");
+                        setFileId(null);
+                        setMediaBlobUrl(null);
+                        setUploadProgress("processing");
+                      }}
+                      className="flex-1"
+                    >
+                      Upload Another
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

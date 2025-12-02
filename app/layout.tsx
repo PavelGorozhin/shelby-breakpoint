@@ -4,6 +4,7 @@ import "./globals.css";
 import { WalletProvider } from "@/providers/WalletProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@/providers/QueryClientProvider";
+import { Navigation } from "@/components/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +29,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
         <QueryClientProvider>
-          <WalletProvider>{children}</WalletProvider>
+          <WalletProvider>
+            <div className="flex h-screen w-screen overflow-hidden">
+              <Navigation />
+              <main className="flex-1 flex flex-col overflow-hidden">
+                {children}
+              </main>
+            </div>
+          </WalletProvider>
         </QueryClientProvider>
         <Toaster />
       </body>

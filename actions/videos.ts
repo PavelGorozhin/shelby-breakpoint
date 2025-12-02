@@ -25,10 +25,8 @@ export type GetVideosParams = {
 export async function getVideos(params: GetVideosParams = {}) {
   const { account } = params;
 
-  const query = db.select().from(videos);
-
   if (account) {
-    query.where(eq(videos.account, account));
+    return db.select().from(videos).where(eq(videos.account, account));
   }
 
   return db.select().from(videos);

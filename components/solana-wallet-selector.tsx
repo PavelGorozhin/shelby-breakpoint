@@ -35,15 +35,31 @@ import {
 } from "./ui/dropdown-menu";
 import { toast } from "sonner";
 
-export function SolanaWalletSelector(
-  walletSortingOptions: WalletSortingOptions
-) {
+interface SolanaWalletSelectorProps extends WalletSortingOptions {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children?: React.ReactNode;
+}
+
+export function SolanaWalletSelector({
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+  children,
+  ...walletSortingOptions
+}: SolanaWalletSelectorProps = {}) {
   const { account, connected, disconnect } = useWallet();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
 
-  const closeDialog = useCallback(() => setIsDialogOpen(false), []);
+  // Use external control if provided, otherwise use internal state
+  const isDialogOpen = externalOpen ?? internalOpen;
+  const setIsDialogOpen = externalOnOpenChange ?? setInternalOpen;
 
-  const copyAddress = useCallback(async () => {
+  const closeDialog = useCallback(
+    () => setIsDialogOpen(false),
+    [setIsDialogOpen]
+  );
+
+  const copyAddress = async () => {
     if (!account?.address) return;
     try {
       await navigator.clipboard.writeText(account.address.toString());
@@ -51,7 +67,7 @@ export function SolanaWalletSelector(
     } catch {
       toast.error("Failed to copy wallet address.");
     }
-  }, [account?.address, toast]);
+  };
 
   return connected ? (
     <DropdownMenu>
@@ -74,7 +90,7 @@ export function SolanaWalletSelector(
   ) : (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>Connect a Wallet</Button>
+        {children || <Button>Connect a Wallet</Button>}
       </DialogTrigger>
       <ConnectWalletDialog close={closeDialog} {...walletSortingOptions} />
     </Dialog>

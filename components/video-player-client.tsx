@@ -6,14 +6,12 @@ import {
   MediaController,
   MediaControlBar,
   MediaTimeRange,
-  MediaTimeDisplay,
   MediaVolumeRange,
-  MediaPlayButton,
   MediaMuteButton,
-  MediaFullscreenButton,
 } from "media-chrome/react";
 import HLS from "hls.js";
 import { Video } from "@/db/schema";
+import { VideoActions } from "@/components/video-actions";
 
 // Default sample videos - always included
 const defaultVideos: Video[] = [
@@ -145,11 +143,11 @@ export function VideoPlayerClient({
   }, [currentIndex, currentVideo]);
 
   return (
-    <div
-      {...handlers}
-      className="relative h-full w-full bg-black overflow-hidden"
-    >
-      <MediaController className="w-full h-full" suppressHydrationWarning>
+    <div {...handlers} className="relative h-full w-full overflow-hidden">
+      <MediaController
+        className="w-full h-full md:rounded overflow-hidden"
+        suppressHydrationWarning
+      >
         <video
           ref={videoRef}
           key={currentVideo.id}
@@ -164,21 +162,26 @@ export function VideoPlayerClient({
           crossOrigin=""
           className="w-full h-full object-cover"
         />
-        <MediaControlBar>
-          <MediaPlayButton />
-          <MediaTimeRange />
-          <MediaTimeDisplay showDuration />
-          <MediaMuteButton />
-          <MediaVolumeRange />
-          <MediaFullscreenButton />
+
+        <MediaControlBar className="px-4">
+          <div className="group w-full flex">
+            <MediaMuteButton className="bg-transparent" />
+            <MediaVolumeRange className="bg-transparent group-hover:opacity-100 opacity-0 transition-all duration-300 group-hover:w-[100px] w-0" />
+          </div>
+        </MediaControlBar>
+        <MediaControlBar className="px-2">
+          <MediaTimeRange className="bg-transparent" />
         </MediaControlBar>
       </MediaController>
+
+      {/* Video actions - description, like, share, creator */}
+      <VideoActions video={currentVideo} />
 
       {/* Navigation hints - always show since it's infinite scroll */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/50 text-sm z-10 pointer-events-none">
         ↑ Swipe up for previous
       </div>
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 text-white/50 text-sm z-10 pointer-events-none">
+      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 text-white/50 text-sm z-10 pointer-events-none">
         ↓ Swipe down for next
       </div>
     </div>
