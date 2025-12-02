@@ -33,7 +33,7 @@ export function VideoPreview({
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
   return (
-    <div className="flex flex-col h-fit">
+    <div>
       <div className="flex flex-col gap-3">
         {/* Video Preview - fills available space */}
         <div className="relative flex-1 bg-card rounded-lg overflow-hidden min-h-[300px] lg:min-h-0">

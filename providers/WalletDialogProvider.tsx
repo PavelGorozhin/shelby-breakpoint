@@ -5,13 +5,14 @@ import {
   useContext,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { SolanaWalletSelector } from "@/components/solana-wallet-selector";
 
 interface WalletDialogContextValue {
   isOpen: boolean;
-  openWalletDialog: () => void;
+  openWalletDialog: (onConnect?: () => void) => void;
   closeWalletDialog: () => void;
 }
 
@@ -33,9 +34,22 @@ interface WalletDialogProviderProps {
 
 export function WalletDialogProvider({ children }: WalletDialogProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const onConnectRef = useRef<(() => void) | undefined>(undefined);
 
-  const openWalletDialog = useCallback(() => setIsOpen(true), []);
-  const closeWalletDialog = useCallback(() => setIsOpen(false), []);
+  const openWalletDialog = useCallback((onConnect?: () => void) => {
+    onConnectRef.current = onConnect;
+    setIsOpen(true);
+  }, []);
+
+  const closeWalletDialog = useCallback(() => {
+    onConnectRef.current = undefined;
+    setIsOpen(false);
+  }, []);
+
+  const handleConnect = useCallback(() => {
+    onConnectRef.current?.();
+    onConnectRef.current = undefined;
+  }, []);
 
   return (
     <WalletDialogContext.Provider
@@ -43,7 +57,11 @@ export function WalletDialogProvider({ children }: WalletDialogProviderProps) {
     >
       {children}
       <div className="hidden">
-        <SolanaWalletSelector open={isOpen} onOpenChange={setIsOpen} />
+        <SolanaWalletSelector
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          onConnect={handleConnect}
+        />
       </div>
     </WalletDialogContext.Provider>
   );

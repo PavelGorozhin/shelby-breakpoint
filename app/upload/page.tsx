@@ -170,8 +170,8 @@ export default function Upload() {
 
         {/* Full-screen content for record/preview */}
         {isFullScreenStep && (
-          <div className="md:flex-1 md:flex md:justify-center h-full overflow-scroll">
-            <div className="w-full md:max-w-md lg:max-w-lg flex flex-1 flex-col p-4 pb-24">
+          <div className="md:flex-1 md:flex md:justify-center h-full ">
+            <div className="w-full md:max-w-md lg:max-w-lg flex flex-col p-4 pb-24 h-full overflow-scroll">
               {step === "record" && (
                 <VideoRecorder onRecordingComplete={handleRecordingComplete} />
               )}

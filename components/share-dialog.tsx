@@ -40,30 +40,22 @@ export function ShareDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-fit">
+      <DialogContent className="flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-center">{title}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-6 py-4">
-          {/* QR Code */}
-          <div className="bg-white p-4 rounded-xl">
-            <QRCodeSVG value={url} size={200} level="M" marginSize={0} />
-          </div>
+        <div className="flex flex-col w-full items-center gap-6 py-4">
+          <QRCodeSVG value={url} size={200} level="M" marginSize={0} />
 
           {/* URL Display */}
-          <div className="w-full flex items-center gap-2 max-w-md">
-            <div className="flex-1 min-w-0 overflow-x-auto bg-muted rounded-md px-3 py-2">
+          <div className="w-full flex items-center gap-2">
+            <div className="flex-1 overflow-x-auto bg-muted rounded-md px-3 py-2 min-w-0">
               <span className="text-sm text-muted-foreground font-mono whitespace-nowrap">
                 {url}
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleCopy}
-              className="shrink-0"
-            >
+            <Button variant="outline" size="icon" onClick={handleCopy}>
               {copied ? (
                 <Check className="h-4 w-4" />
               ) : (

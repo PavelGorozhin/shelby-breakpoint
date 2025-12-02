@@ -38,12 +38,14 @@ import { toast } from "sonner";
 interface SolanaWalletSelectorProps extends WalletSortingOptions {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onConnect?: () => void;
   children?: React.ReactNode;
 }
 
 export function SolanaWalletSelector({
   open: externalOpen,
   onOpenChange: externalOnOpenChange,
+  onConnect,
   children,
   ...walletSortingOptions
 }: SolanaWalletSelectorProps = {}) {
@@ -54,10 +56,10 @@ export function SolanaWalletSelector({
   const isDialogOpen = externalOpen ?? internalOpen;
   const setIsDialogOpen = externalOnOpenChange ?? setInternalOpen;
 
-  const closeDialog = useCallback(
-    () => setIsDialogOpen(false),
-    [setIsDialogOpen]
-  );
+  const handleConnect = useCallback(() => {
+    setIsDialogOpen(false);
+    onConnect?.();
+  }, [setIsDialogOpen, onConnect]);
 
   const copyAddress = async () => {
     if (!account?.address) return;
@@ -92,7 +94,7 @@ export function SolanaWalletSelector({
       <DialogTrigger asChild>
         {children || <Button>Connect a Wallet</Button>}
       </DialogTrigger>
-      <ConnectWalletDialog close={closeDialog} {...walletSortingOptions} />
+      <ConnectWalletDialog close={handleConnect} {...walletSortingOptions} />
     </Dialog>
   );
 }
