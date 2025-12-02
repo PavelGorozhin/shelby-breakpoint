@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { videos } from "@/db/schema";
+import { UPLOAD_ALLOWLIST_ADDRESSES_SERVER } from "@/lib/constants";
 
 export type SaveVideoParams = {
   fileId: string;
@@ -13,6 +14,12 @@ export type SaveVideoParams = {
 };
 
 export async function saveVideo(params: SaveVideoParams) {
+  if (!UPLOAD_ALLOWLIST_ADDRESSES_SERVER.includes(params.account)) {
+    throw new Error(
+      `Account address ${params.account} is not authorized to upload`
+    );
+  }
+
   const [video] = await db.insert(videos).values(params).returning();
 
   return video;

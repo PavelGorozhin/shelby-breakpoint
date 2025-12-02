@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon, PlayIcon } from "@radix-ui/react-icons";
 import { VideoRecorder } from "@/components/video-recorder";
 import { toast } from "sonner";
+import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
 
 type Step = "record" | "preview" | "uploading" | "complete";
 type UploadProgress = "processing" | "transcoding" | "uploading" | "saving";
@@ -112,13 +113,7 @@ export default function Upload() {
 
     // Check if the account address is in the upload allowlist
     const accountAddress = account.address.toString();
-    const allowlistAddresses =
-      process.env.NEXT_PUBLIC_UPLOAD_ALLOWLIST_ADDRESSES?.split(",") || [];
-
-    if (
-      allowlistAddresses.length > 0 &&
-      !allowlistAddresses.includes(accountAddress)
-    ) {
+    if (!UPLOAD_ALLOWLIST_ADDRESSES.includes(accountAddress)) {
       toast.error(
         `Account address ${accountAddress} is not in the upload allowlist`
       );
