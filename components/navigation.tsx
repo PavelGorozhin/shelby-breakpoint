@@ -3,9 +3,8 @@
 import { Home, Plus, User } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { SolanaWalletSelector } from "./solana-wallet-selector";
+import { useWalletDialog } from "@/providers/WalletDialogProvider";
 import { Icons } from "./ui/icons";
 
 interface NavItem {
@@ -26,7 +25,7 @@ export function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
   const { connected } = useWallet();
-  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const { openWalletDialog } = useWalletDialog();
 
   const navigateWithReload = (href: string) => {
     // Use window.location to force full page reload for COOP/COEP headers
@@ -36,7 +35,7 @@ export function Navigation() {
   const handleNavClick = (item: NavItem) => {
     // If clicking profile and not connected, show wallet dialog
     if (item.isProfile && !connected) {
-      setIsWalletDialogOpen(true);
+      openWalletDialog();
       return;
     }
 
@@ -137,13 +136,6 @@ export function Navigation() {
           );
         })}
       </nav>
-
-      <div className="hidden">
-        <SolanaWalletSelector
-          open={isWalletDialogOpen}
-          onOpenChange={setIsWalletDialogOpen}
-        />
-      </div>
     </>
   );
 }

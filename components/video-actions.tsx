@@ -4,10 +4,14 @@ import { useState } from "react";
 import { Heart, Share2 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { useRouter } from "next/navigation";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { ShareDialog } from "@/components/share-dialog";
 import { Video } from "@/db/schema";
 import { cn } from "@/lib/utils";
+import { useWalletDialog } from "@/providers/WalletDialogProvider";
+import useLikeStatus from "@/queries/useLikeStatus";
+import useLike from "@/mutations/useLike";
 
 interface VideoActionsProps {
   video: Video;
@@ -15,7 +19,19 @@ interface VideoActionsProps {
 
 export function VideoActions({ video }: VideoActionsProps) {
   const router = useRouter();
-  const [isLiked, setIsLiked] = useState(false);
+  const { account, connected } = useWallet();
+  const { openWalletDialog } = useWalletDialog();
+  const walletAddress = account?.address?.toString();
+  const [isShareOpen, setIsShareOpen] = useState(false);
+
+  // Fetch like status
+  const { data: likeStatus } = useLikeStatus({
+    videoId: video.id,
+    walletAddress,
+  });
+
+  // Toggle like mutation with optimistic updates
+  const { mutate: toggleLike } = useLike();
 
   const handleCreatorClick = () => {
     if (video.account) {
@@ -24,18 +40,20 @@ export function VideoActions({ video }: VideoActionsProps) {
   };
 
   const handleLike = () => {
-    setIsLiked((prev) => !prev);
+    if (!connected || !walletAddress) {
+      openWalletDialog();
+      return;
+    }
+    toggleLike({ videoId: video.id, walletAddress });
   };
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/?id=${video.fileId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard");
-    } catch {
-      toast.error("Failed to copy link");
-    }
-  };
+  const isLiked = likeStatus?.isLiked ?? false;
+  const likeCount = likeStatus?.likeCount ?? 0;
+
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/?id=${video.fileId}`
+      : "";
 
   return (
     <>
@@ -85,7 +103,7 @@ export function VideoActions({ video }: VideoActionsProps) {
               strokeWidth={isLiked ? 0 : 2}
             />
           </Button>
-          <span className="text-background text-xs drop-shadow-lg">300</span>
+          <span className="text-white text-xs drop-shadow-lg">{likeCount}</span>
         </div>
 
         {/* Share Button */}
@@ -93,14 +111,20 @@ export function VideoActions({ video }: VideoActionsProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleShare}
+            onClick={() => setIsShareOpen(true)}
             className="w-12 h-12 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm hover:text-white text-white"
           >
             <Share2 className="w-6 h-6" />
           </Button>
-          <span className="text-background text-xs drop-shadow-lg">20</span>
+          <span className="text-white text-xs drop-shadow-lg">Share</span>
         </div>
       </div>
+
+      <ShareDialog
+        open={isShareOpen}
+        onOpenChange={setIsShareOpen}
+        url={shareUrl}
+      />
     </>
   );
 }

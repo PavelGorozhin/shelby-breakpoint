@@ -45,3 +45,16 @@ export const profiles = sqliteTable("profiles", {
 
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
+
+// Likes table for video likes
+export const likes = sqliteTable("likes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  videoId: integer("video_id").notNull(),
+  walletAddress: text("wallet_address").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;

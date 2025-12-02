@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/WalletProvider";
+import { WalletDialogProvider } from "@/providers/WalletDialogProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@/providers/QueryClientProvider";
 import { Navigation } from "@/components/navigation";
@@ -33,12 +34,14 @@ export default function RootLayout({
       >
         <QueryClientProvider>
           <WalletProvider>
-            <div className="flex h-screen w-screen overflow-hidden">
-              <Navigation />
-              <main className="flex-1 flex flex-col overflow-hidden">
-                {children}
-              </main>
-            </div>
+            <WalletDialogProvider>
+              <div className="flex h-screen w-screen overflow-hidden">
+                <Navigation />
+                <main className="flex-1 flex flex-col overflow-hidden">
+                  {children}
+                </main>
+              </div>
+            </WalletDialogProvider>
           </WalletProvider>
         </QueryClientProvider>
         <Toaster />
