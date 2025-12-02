@@ -1,0 +1,2 @@
+export const UPLOAD_ALLOWLIST_ADDRESSES =
+  process.env.NEXT_PUBLIC_UPLOAD_ALLOWLIST_ADDRESSES?.split(",") ?? [];
