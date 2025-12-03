@@ -35,6 +35,10 @@ export const profiles = sqliteTable("profiles", {
   walletAddress: text("wallet_address").notNull().unique(),
   username: text("username"),
   bio: text("bio"),
+  email: text("email"),
+  marketingOptIn: integer("marketing_opt_in", { mode: "boolean" }).default(
+    false
+  ),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

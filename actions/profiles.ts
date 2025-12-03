@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { profiles } from "@/db/schema";
+import { verifyRecaptcha } from "@/actions/recaptcha";
 
 export type GetProfileParams = {
   walletAddress: string;
@@ -23,10 +24,28 @@ export type SaveProfileParams = {
   walletAddress: string;
   username?: string | null;
   bio?: string | null;
+  email?: string | null;
+  marketingOptIn?: boolean;
+  recaptchaToken?: string;
 };
 
 export async function saveProfile(params: SaveProfileParams) {
-  const { walletAddress, username, bio } = params;
+  const {
+    walletAddress,
+    username,
+    bio,
+    email,
+    marketingOptIn,
+    recaptchaToken,
+  } = params;
+
+  // Verify reCAPTCHA if token is provided
+  if (recaptchaToken) {
+    const isHuman = await verifyRecaptcha(recaptchaToken);
+    if (!isHuman) {
+      throw new Error("reCAPTCHA verification failed. Please try again.");
+    }
+  }
 
   // Check if profile exists
   const existing = await getProfile({ walletAddress });
@@ -38,6 +57,8 @@ export async function saveProfile(params: SaveProfileParams) {
       .set({
         username,
         bio,
+        email,
+        marketingOptIn: marketingOptIn ?? false,
         updatedAt: new Date(),
       })
       .where(eq(profiles.walletAddress, walletAddress))
@@ -52,10 +73,11 @@ export async function saveProfile(params: SaveProfileParams) {
         walletAddress,
         username,
         bio,
+        email,
+        marketingOptIn: marketingOptIn ?? false,
       })
       .returning();
 
     return created;
   }
 }
-

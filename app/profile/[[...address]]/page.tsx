@@ -5,11 +5,12 @@ import { useRouter, useParams } from "next/navigation";
 import { Upload, Copy, Check, Pencil, Video, LogOut } from "lucide-react";
 import { VideoThumbnail } from "@/components/video-thumbnail";
 import Avatar from "boring-avatars";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import useProfile from "@/queries/useProfile";
 import useVideos from "@/queries/useVideos";
 import useSaveProfile from "@/mutations/useSaveProfile";
 import Link from "next/link";
+import { useRecaptcha } from "@/providers/RecaptchaProvider";
 
 export default function ProfilePage() {
   const { account, connected, disconnect } = useWallet();
@@ -33,6 +35,9 @@ export default function ProfilePage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editUsername, setEditUsername] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editMarketingOptIn, setEditMarketingOptIn] = useState(false);
+  const { executeRecaptcha } = useRecaptcha();
 
   // Get address from path params, or use connected wallet address
   // params.address is an array for catch-all routes: /profile/0x123 -> ['0x123']
@@ -60,18 +65,45 @@ export default function ProfilePage() {
     },
   });
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = useCallback(async () => {
     if (!connectedAddress) return;
+
+    let recaptchaToken: string | undefined;
+
+    // Get reCAPTCHA token if available
+    if (executeRecaptcha) {
+      try {
+        recaptchaToken = await executeRecaptcha("save_profile");
+      } catch (error) {
+        console.error("reCAPTCHA error:", error);
+        toast.error("Failed to verify you're not a bot. Please try again.");
+        return;
+      }
+    }
+
     saveProfile({
       walletAddress: connectedAddress,
       username: editUsername || null,
       bio: editBio || null,
+      email: editEmail || null,
+      marketingOptIn: editMarketingOptIn,
+      recaptchaToken,
     });
-  };
+  }, [
+    connectedAddress,
+    editUsername,
+    editBio,
+    editEmail,
+    editMarketingOptIn,
+    executeRecaptcha,
+    saveProfile,
+  ]);
 
   const openEditDialog = () => {
     setEditUsername(profile?.username || "");
     setEditBio(profile?.bio || "");
+    setEditEmail(profile?.email || "");
+    setEditMarketingOptIn(profile?.marketingOptIn ?? false);
     setIsEditDialogOpen(true);
   };
 
@@ -303,6 +335,43 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground">
                 {editBio.length}/200 characters
               </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={editEmail}
+                onChange={(e) => {
+                  const newEmail = e.target.value;
+                  setEditEmail(newEmail);
+                  // Auto-check marketing opt-in when user starts typing email
+                  if (newEmail && !editMarketingOptIn) {
+                    setEditMarketingOptIn(true);
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Used for notifications and updates.
+              </p>
+            </div>
+            <div className="flex items-start space-x-3 pt-2">
+              <Checkbox
+                id="marketing"
+                checked={editMarketingOptIn}
+                onCheckedChange={(checked) =>
+                  setEditMarketingOptIn(checked === true)
+                }
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="marketing"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Receive marketing emails
+                </Label>
+              </div>
             </div>
           </div>
           <DialogFooter>

@@ -16,10 +16,10 @@ const getAptosClientApiKey = (network: Network) => {
 const getAptosClientTransactionSubmitter = (network: Network) => {
   switch (network) {
     case Network.SHELBYNET:
-      if (process.env.APTOS_SHELBYNET_GAS_STATION_API_KEY) {
+      if (process.env.NEXT_PUBLIC_APTOS_SHELBYNET_GAS_STATION_API_KEY) {
         return new GasStationTransactionSubmitter({
           network,
-          apiKey: process.env.APTOS_SHELBYNET_GAS_STATION_API_KEY,
+          apiKey: process.env.NEXT_PUBLIC_APTOS_SHELBYNET_GAS_STATION_API_KEY,
           baseUrl: "https://api.shelbynet.shelby.xyz/gs/v1",
         });
       }
