@@ -27,24 +27,19 @@ export function Navigation() {
   const { connected } = useWallet();
   const { openWalletDialog } = useWalletDialog();
 
-  const navigateTo = (href: string, reload: boolean) => {
-    if (reload) {
-      // Use window.location to force full page reload for COOP/COEP headers
-      globalThis.location.assign(href);
-    } else {
-      router.push(href);
-    }
+  const navigateTo = (href: string) => {
+    router.push(href);
   };
 
   const handleNavClick = (item: NavItem) => {
     // If clicking profile or upload and not connected, show wallet dialog
     // After connection, navigate to the intended destination
     if ((item.isProfile || item.isUpload) && !connected) {
-      openWalletDialog(() => navigateTo(item.href, item.isUpload ?? false));
+      openWalletDialog(() => navigateTo(item.href));
       return;
     }
 
-    navigateTo(item.href, item.isUpload ?? false);
+    navigateTo(item.href);
   };
 
   return (
