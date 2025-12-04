@@ -118,7 +118,7 @@ export default function useTranscode({
         .input("/input.mp4")
         .outputDir("/out")
         .withLadder([
-          { width: 1080, height: 1920, bitrateBps: 1_000_000, name: "1080p" },
+          { width: 1920, height: 1080, bitrateBps: 1_000_000, name: "1080p" },
         ])
         .withVideoEncoder({ kind: "copy" })
         .withSegments({ mode: "fixed", segmentSeconds: 2 })
