@@ -86,6 +86,7 @@ export default function Upload() {
     onSuccess: () => setStep("complete"),
     onError: (error) => {
       console.error("Upload failed:", error);
+      toast.error(error.message || "Upload failed. Please try again.");
       setStep("preview");
     },
   });

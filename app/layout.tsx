@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/WalletProvider";
 import { WalletDialogProvider } from "@/providers/WalletDialogProvider";
+import { RecaptchaProvider } from "@/providers/RecaptchaProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@/providers/QueryClientProvider";
 import { Navigation } from "@/components/navigation";
@@ -32,18 +33,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
-        <QueryClientProvider>
-          <WalletProvider>
-            <WalletDialogProvider>
-              <div className="flex h-screen w-screen overflow-hidden">
-                <Navigation />
-                <main className="flex-1 flex flex-col overflow-hidden">
-                  {children}
-                </main>
-              </div>
-            </WalletDialogProvider>
-          </WalletProvider>
-        </QueryClientProvider>
+        <RecaptchaProvider>
+          <QueryClientProvider>
+            <WalletProvider>
+              <WalletDialogProvider>
+                <div className="flex h-screen w-screen overflow-hidden">
+                  <Navigation />
+                  <main className="flex-1 flex flex-col overflow-hidden">
+                    {children}
+                  </main>
+                </div>
+              </WalletDialogProvider>
+            </WalletProvider>
+          </QueryClientProvider>
+        </RecaptchaProvider>
         <Toaster />
       </body>
     </html>
