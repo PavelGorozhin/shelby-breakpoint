@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Heart, Share2 } from "lucide-react";
-import Avatar from "boring-avatars";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useWalletDialog } from "@/providers/WalletDialogProvider";
 import useLikeStatus from "@/queries/useLikeStatus";
 import useLike from "@/mutations/useLike";
+import GeometricAvatar from "./geometric-avatar";
 
 interface VideoActionsProps {
   video: Video;
@@ -73,12 +73,7 @@ export function VideoActions({ video }: VideoActionsProps) {
             className="w-12 h-12 rounded-full p-0 overflow-hidden transition-all hover:bg-transparent"
             asChild
           >
-            <Avatar
-              size={48}
-              name={video.account}
-              variant="beam"
-              colors={["#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899"]}
-            />
+            <GeometricAvatar size={48} name={video.account} />
           </Button>
         )}
 

@@ -11,6 +11,7 @@ import { saveVideo } from "@/actions/videos";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, PlayIcon } from "@radix-ui/react-icons";
 import { VideoRecorder } from "@/components/video-recorder";
+import ClientOnly from "@/components/client-only";
 import { toast } from "sonner";
 import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
 import Loader from "@/components/ui/loader";
@@ -141,7 +142,15 @@ export default function Upload() {
           <div className="md:flex-1 md:flex md:justify-center h-full ">
             <div className="w-full md:max-w-md lg:max-w-lg flex flex-col p-4 pb-24 h-full overflow-scroll">
               {step === "record" && (
-                <VideoRecorder onRecordingComplete={handleRecordingComplete} />
+                <ClientOnly
+                  fallback={
+                    <div className="flex flex-col h-full">
+                      <div className="flex-1 bg-card rounded-lg animate-pulse" />
+                    </div>
+                  }
+                >
+                  <VideoRecorder onRecordingComplete={handleRecordingComplete} />
+                </ClientOnly>
               )}
 
               {step === "preview" && mediaBlobUrl && (

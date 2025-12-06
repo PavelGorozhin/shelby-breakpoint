@@ -67,13 +67,13 @@ export function Navigation() {
                   "flex flex-col items-center gap-1.5 transition-colors group w-full",
                   isActive
                     ? "text-sidebar-foreground"
-                    : "text-muted-foreground hover:text-sidebar-foreground"
+                    : "text-secondary-foreground hover:text-sidebar-foreground"
                 )}
               >
                 {item.isUpload ? (
                   <div className="relative">
                     <div className="absolute inset-0 bg-linear-to-r from-primary to-destructive rounded-lg blur-sm opacity-75 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex items-center justify-center w-10 h-10 bg-primary-foreground rounded-lg">
+                    <div className="relative flex items-center justify-center w-10 h-10 bg-card rounded-lg">
                       <Icon
                         className="w-5 h-5 text-primary"
                         strokeWidth={2.5}

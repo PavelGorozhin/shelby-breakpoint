@@ -4,7 +4,6 @@ import { useWallet, truncateAddress } from "@aptos-labs/wallet-adapter-react";
 import { useRouter, useParams } from "next/navigation";
 import { Upload, Copy, Check, Pencil, Video, LogOut } from "lucide-react";
 import { VideoThumbnail } from "@/components/video-thumbnail";
-import Avatar from "boring-avatars";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,7 @@ import useSignOut from "@/mutations/useSignOut";
 import Link from "next/link";
 import { useRecaptcha } from "@/providers/RecaptchaProvider";
 import Loader from "@/components/ui/loader";
+import GeometricAvatar from "@/components/geometric-avatar";
 
 export default function ProfilePage() {
   const { account, connected } = useWallet();
@@ -156,12 +156,7 @@ export default function ProfilePage() {
         <div className="p-6 border-b border-border flex flex-col sm:flex-row h-fit items-center sm:items-start gap-4 sm:gap-6">
           {/* Avatar */}
           <div className="shrink-0">
-            <Avatar
-              size={80}
-              name={profileAddress || "anonymous"}
-              variant="beam"
-              colors={["#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899"]}
-            />
+            <GeometricAvatar size={80} name={profileAddress || "anonymous"} />
           </div>
 
           {/* Profile Info */}
