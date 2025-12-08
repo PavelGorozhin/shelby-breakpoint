@@ -25,6 +25,7 @@ export type SaveProfileParams = {
   username?: string | null;
   bio?: string | null;
   email?: string | null;
+  x_handle?: string | null;
   marketingOptIn?: boolean;
   recaptchaToken?: string;
 };
@@ -35,6 +36,7 @@ export async function saveProfile(params: SaveProfileParams) {
     username,
     bio,
     email,
+    x_handle,
     marketingOptIn,
     recaptchaToken,
   } = params;
@@ -58,6 +60,7 @@ export async function saveProfile(params: SaveProfileParams) {
         username,
         bio,
         email,
+        x_handle,
         marketingOptIn: marketingOptIn ?? false,
         updatedAt: new Date(),
       })
@@ -74,6 +77,7 @@ export async function saveProfile(params: SaveProfileParams) {
         username,
         bio,
         email,
+        x_handle,
         marketingOptIn: marketingOptIn ?? false,
       })
       .returning();

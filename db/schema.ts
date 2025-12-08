@@ -36,6 +36,7 @@ export const profiles = sqliteTable("profiles", {
   username: text("username"),
   bio: text("bio"),
   email: text("email"),
+  x_handle: text("x_handle"),
   marketingOptIn: integer("marketing_opt_in", { mode: "boolean" }).default(
     false
   ),

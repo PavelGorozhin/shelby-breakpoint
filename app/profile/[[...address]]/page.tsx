@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editMarketingOptIn, setEditMarketingOptIn] = useState(false);
+  const [editXHandle, setEditXHandle] = useState("");
   const { executeRecaptcha } = useRecaptcha();
 
   // Get address from path params, or use connected wallet address
@@ -53,6 +54,7 @@ export default function ProfilePage() {
   const { data: profile, isLoading: isProfileLoading } = useProfile({
     walletAddress: profileAddress,
   });
+  console.log("profile", profile);
 
   // Save profile mutation (only for own profile)
   const { mutate: saveProfile, isPending: isSavingProfile } = useSaveProfile({
@@ -86,6 +88,7 @@ export default function ProfilePage() {
       username: editUsername || null,
       bio: editBio || null,
       email: editEmail || null,
+      x_handle: editXHandle || null,
       marketingOptIn: editMarketingOptIn,
       recaptchaToken,
     });
@@ -95,6 +98,7 @@ export default function ProfilePage() {
     editBio,
     editEmail,
     editMarketingOptIn,
+    editXHandle,
     executeRecaptcha,
     saveProfile,
   ]);
@@ -103,6 +107,7 @@ export default function ProfilePage() {
     setEditUsername(profile?.username || "");
     setEditBio(profile?.bio || "");
     setEditEmail(profile?.email || "");
+    setEditXHandle(profile?.x_handle || "");
     setEditMarketingOptIn(profile?.marketingOptIn ?? false);
     setIsEditDialogOpen(true);
   };
@@ -335,6 +340,16 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground">
                 {editBio.length}/200 characters
               </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="x_handle">X (Twitter) handle</Label>
+              <Input
+                id="x_handle"
+                type="text"
+                placeholder="Your X (Twitter) handle"
+                value={editXHandle}
+                onChange={(e) => setEditXHandle(e.target.value)}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
