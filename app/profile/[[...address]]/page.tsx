@@ -54,7 +54,6 @@ export default function ProfilePage() {
   const { data: profile, isLoading: isProfileLoading } = useProfile({
     walletAddress: profileAddress,
   });
-  console.log("profile", profile);
 
   // Save profile mutation (only for own profile)
   const { mutate: saveProfile, isPending: isSavingProfile } = useSaveProfile({
