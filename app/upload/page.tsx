@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { VideoPreview } from "@/components/video-preview";
-import useFfmpegWasm from "@/queries/useFfmpegWasm";
-import useTranscode from "@/mutations/useTranscode";
 import useWalletUploadBlobs from "@/mutations/useWalletUploadBlobs";
 import { createShelbyDownloadURL } from "@/lib/shelby";
 import { saveVideo } from "@/actions/videos";
@@ -17,7 +15,7 @@ import { toast } from "sonner";
 import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
 
 type Step = "record" | "preview" | "uploading" | "complete";
-type UploadProgress = "processing" | "transcoding" | "uploading" | "saving";
+type UploadProgress = "processing" | "uploading" | "saving";
 
 export default function Upload() {
   const [step, setStep] = useState<Step>("record");
@@ -29,14 +27,6 @@ export default function Upload() {
   const router = useRouter();
   const { account } = useWallet();
 
-  // Load FFmpeg WASM
-  const {
-    data: ffmpeg,
-    error: ffmpegError,
-    refetch: refetchFfmpeg,
-  } = useFfmpegWasm();
-
-  const { mutateAsync: transcode } = useTranscode({ ffmpeg });
   const { mutateAsync: uploadBlobs } = useWalletUploadBlobs();
 
   // Process and upload mutation
@@ -54,25 +44,23 @@ export default function Upload() {
       description: string;
       email: string;
     }) => {
-      // Step 1: Transcode
-      setUploadProgress("transcoding");
-      const transcodeOutput = await transcode({ mediaBlobUrl });
+      // Step 1: Fetch the raw video blob
+      setUploadProgress("processing");
+      const response = await fetch(mediaBlobUrl);
+      const blobData = new Uint8Array(await response.arrayBuffer());
 
       // Step 2: Upload to Shelby
       setUploadProgress("uploading");
       const expirationMicros = (Date.now() + 60 * 60 * 1000) * 1000;
-      const blobsWithPrefix = transcodeOutput.blobs.map((blob) => ({
-        ...blob,
-        blobName: `${fileId}/${blob.blobName}`,
-      }));
-      await uploadBlobs({ blobs: blobsWithPrefix, expirationMicros });
+      const blobName = `${fileId}/video.mp4`;
+      await uploadBlobs({
+        blobs: [{ blobName, blobData }],
+        expirationMicros,
+      });
 
       // Step 3: Save to database (TODO: this is unsafe, validate later)
       setUploadProgress("saving");
-      const url = createShelbyDownloadURL(
-        accountAddress,
-        `${fileId}/master.m3u8`
-      );
+      const url = createShelbyDownloadURL(accountAddress, blobName);
       await saveVideo({
         fileId,
         account: accountAddress,
@@ -135,8 +123,6 @@ export default function Upload() {
     switch (progress) {
       case "processing":
         return "Processing...";
-      case "transcoding":
-        return "Transcoding video...";
       case "uploading":
         return "Uploading to Shelby...";
       case "saving":
@@ -150,25 +136,6 @@ export default function Upload() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* FFmpeg Error - shown as overlay for full-screen steps */}
-        {ffmpegError && isFullScreenStep && (
-          <div className="absolute top-4 left-4 right-4 z-50 bg-destructive/90 backdrop-blur-sm border border-destructive rounded-lg p-4 space-y-2 max-w-md mx-auto md:left-[88px]">
-            <p className="text-destructive-foreground text-sm font-medium">
-              Failed to load FFmpeg
-            </p>
-            <p className="text-destructive-foreground/80 text-xs">
-              {ffmpegError.message}
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => refetchFfmpeg()}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
-
         {/* Full-screen content for record/preview */}
         {isFullScreenStep && (
           <div className="md:flex-1 md:flex md:justify-center h-full ">
@@ -196,25 +163,6 @@ export default function Upload() {
         {!isFullScreenStep && (
           <div className="flex-1 overflow-auto bg-background p-8 pb-20 md:pb-8 flex justify-center">
             <div className="w-full md:max-w-md lg:max-w-lg space-y-6">
-              {/* FFmpeg Error */}
-              {ffmpegError && (
-                <div className="bg-destructive/20 border border-destructive rounded p-4 space-y-2">
-                  <p className="text-destructive text-sm font-medium">
-                    Failed to load FFmpeg
-                  </p>
-                  <p className="text-destructive/80 text-xs">
-                    {ffmpegError.message}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => refetchFfmpeg()}
-                  >
-                    Retry
-                  </Button>
-                </div>
-              )}
-
               {/* Uploading Step */}
               {step === "uploading" && (
                 <div className="space-y-4">
