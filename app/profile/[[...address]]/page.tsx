@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editMarketingOptIn, setEditMarketingOptIn] = useState(false);
+  const [editXHandle, setEditXHandle] = useState("");
   const { executeRecaptcha } = useRecaptcha();
 
   // Get address from path params, or use connected wallet address
@@ -86,6 +87,7 @@ export default function ProfilePage() {
       username: editUsername || null,
       bio: editBio || null,
       email: editEmail || null,
+      x_handle: editXHandle || null,
       marketingOptIn: editMarketingOptIn,
       recaptchaToken,
     });
@@ -95,6 +97,7 @@ export default function ProfilePage() {
     editBio,
     editEmail,
     editMarketingOptIn,
+    editXHandle,
     executeRecaptcha,
     saveProfile,
   ]);
@@ -103,6 +106,7 @@ export default function ProfilePage() {
     setEditUsername(profile?.username || "");
     setEditBio(profile?.bio || "");
     setEditEmail(profile?.email || "");
+    setEditXHandle(profile?.x_handle || "");
     setEditMarketingOptIn(profile?.marketingOptIn ?? false);
     setIsEditDialogOpen(true);
   };
@@ -305,10 +309,13 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>
-              Update your profile information. This will be visible to others.
+              Update your profile information.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Username and Bio will be visible to others.
+            </p>
             <div className="grid gap-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -335,6 +342,46 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground">
                 {editBio.length}/200 characters
               </p>
+            </div>
+            <p className="text-md text-muted-foreground">
+              Communication methods
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Update your communication methods to join the Shelby Breakpoint
+              contest. Will be used to contact you if you win.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Will not be shared with anyone else.
+            </p>
+            <div className="text-sm text-muted-foreground">
+              <p>How the contest works:</p>
+              <ul className="list-disc pl-5">
+                <li>
+                  Watch and like up to{" "}
+                  <span className="font-bold">five videos</span> in the app
+                </li>
+                <li>Must live in an eligible country for shipping</li>
+              </ul>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <p>What you can win:</p>
+              <ul className="list-disc pl-5">
+                <li>
+                  Exclusive Shelby Merch Bundle: sweatshirt, t-shirt, mug, tote
+                  bag, notebook, stickers
+                </li>
+                <li>Professional Creator Kit: Mics, camera, and other gear</li>
+              </ul>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="x_handle">X (Twitter) handle</Label>
+              <Input
+                id="x_handle"
+                type="text"
+                placeholder="Your X (Twitter) handle"
+                value={editXHandle}
+                onChange={(e) => setEditXHandle(e.target.value)}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
