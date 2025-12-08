@@ -21,8 +21,8 @@ importers:
         specifier: ^5.1.5
         version: 5.1.5(got@11.8.6)
       '@aptos-labs/wallet-adapter-react':
-        specifier: ^7.2.2
-        version: 7.2.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)
+        specifier: ^7.2.3
+        version: 7.2.3(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)
       '@ffmpeg/core':
         specifier: ^0.12.10
         version: 0.12.10
@@ -61,7 +61,7 @@ importers:
         version: 0.1.0(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(tailwindcss@4.1.17)(typescript@5.9.3)(vite@7.2.6(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2))
       '@shelby-protocol/react':
         specifier: ^0.0.2
-        version: 0.0.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.2.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0))(@shelby-protocol/sdk@0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6)))(@tanstack/react-query@5.90.10(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.0.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.2.3(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0))(@shelby-protocol/sdk@0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6)))(@tanstack/react-query@5.90.10(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@shelby-protocol/sdk':
         specifier: ^0.0.7
         version: 0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))
@@ -211,13 +211,13 @@ packages:
     resolution: {integrity: sha512-oKZehnZHmJJ5orjnJgCDfCZeQtJlnmB16aUk4ZXYzBDcPIaE61Fib3CHtiDpCLPsVOq/sOZFQJ8Fi/Ut0wSopw==}
     engines: {node: '>=20.0.0'}
 
-  '@aptos-labs/wallet-adapter-core@7.8.0':
-    resolution: {integrity: sha512-ae68POGrunHg9c8S8wlbfWk0o5cYnH13tF2Ty6OE0ElUS2iG9lzrXo3idCGiiXw0H9QV3BFdQtPsN4tTsKnmyQ==}
+  '@aptos-labs/wallet-adapter-core@7.9.0':
+    resolution: {integrity: sha512-R3LpaV+Keg9QFOfsNNbEJV9g4oU6fN0+RaaYtAAUB5lv0GupDT3YhMkwpR6gVqT7Inc5Zl08tNs/jWCD0kcAXA==}
     peerDependencies:
       '@aptos-labs/ts-sdk': ^5.1.1
 
-  '@aptos-labs/wallet-adapter-react@7.2.2':
-    resolution: {integrity: sha512-NqS47s2PZj3o/xvFGkcn+1/ug0uMiWO4MFttJHG1017n3VsV0pva8V7/YePBOrb7GjbEH0tAoAz2JhGrBorXFA==}
+  '@aptos-labs/wallet-adapter-react@7.2.3':
+    resolution: {integrity: sha512-2QqdO1D3v6Lq71TxU+ulvCFoeXDZNQ3oo25maFtFF34TywBMZX1wIrC/k5NhsCTurrQQ/3HxpD0uY8FtOEmfsw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
@@ -4462,7 +4462,7 @@ snapshots:
     transitivePeerDependencies:
       - got
 
-  '@aptos-labs/wallet-adapter-core@7.8.0(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))':
+  '@aptos-labs/wallet-adapter-core@7.9.0(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))':
     dependencies:
       '@aptos-connect/wallet-adapter-plugin': 2.7.0(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))
       '@aptos-labs/ts-sdk': 5.1.5(got@11.8.6)
@@ -4476,9 +4476,9 @@ snapshots:
       - aptos
       - debug
 
-  '@aptos-labs/wallet-adapter-react@7.2.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)':
+  '@aptos-labs/wallet-adapter-react@7.2.3(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)':
     dependencies:
-      '@aptos-labs/wallet-adapter-core': 7.8.0(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))
+      '@aptos-labs/wallet-adapter-core': 7.9.0(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))
       '@radix-ui/react-slot': 1.2.4(@types/react@19.2.6)(react@19.2.0)
       react: 19.2.0
     transitivePeerDependencies:
@@ -6021,7 +6021,7 @@ snapshots:
       - vite
       - webpack
 
-  '@shelby-protocol/react@0.0.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.2.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0))(@shelby-protocol/sdk@0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6)))(@tanstack/react-query@5.90.10(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
+  '@shelby-protocol/react@0.0.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.2.3(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0))(@shelby-protocol/sdk@0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6)))(@tanstack/react-query@5.90.10(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
     dependencies:
       '@aptos-labs/ts-sdk': 5.1.5(got@11.8.6)
       '@shelby-protocol/sdk': 0.0.7(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))
@@ -6031,7 +6031,7 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
       typescript: 5.9.3
     optionalDependencies:
-      '@aptos-labs/wallet-adapter-react': 7.2.2(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)
+      '@aptos-labs/wallet-adapter-react': 7.2.3(@aptos-labs/ts-sdk@5.1.5(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.6)(@wallet-standard/core@1.1.1)(aptos@1.22.1(got@11.8.6))(react@19.2.0)
 
   '@shelby-protocol/reed-solomon@0.0.1': {}
 
