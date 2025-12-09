@@ -3,7 +3,12 @@
 import { useRef, useEffect, useState } from "react";
 import { ReactMediaRecorder } from "react-media-recorder";
 import { Button } from "@/components/ui/button";
-import { VideoIcon, UpdateIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+import {
+  VideoIcon,
+  UpdateIcon,
+  CrossCircledIcon,
+  UploadIcon,
+} from "@radix-ui/react-icons";
 import useIsClient from "@/queries/useIsClient";
 import { formatTime } from "@/lib/time";
 import { checkMediaSupported, getMediaMimeType } from "@/lib/media";
@@ -22,12 +27,22 @@ export function VideoRecorderClient({
 }: VideoRecorderClientProps) {
   const isClient = useIsClient();
   const [facingMode, setFacingMode] = useState<FacingMode>("environment");
+  const fallbackFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSwitchCamera = () => {
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   };
 
   const isFrontCamera = facingMode === "user";
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const blobUrl = URL.createObjectURL(file);
+      const id = crypto.randomUUID();
+      onRecordingComplete(blobUrl, id);
+    }
+  };
 
   // Show loading while on server
   if (!isClient) {
@@ -57,6 +72,20 @@ export function VideoRecorderClient({
                 {supportError}
               </p>
             )}
+
+            <div className="mt-8">
+              <Button onClick={() => fallbackFileInputRef.current?.click()}>
+                <UploadIcon className="mr-2 h-4 w-4" />
+                Upload Video
+              </Button>
+              <input
+                ref={fallbackFileInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -100,6 +129,7 @@ export function VideoRecorderClient({
           facingMode={facingMode}
           isFrontCamera={isFrontCamera}
           onSwitchCamera={handleSwitchCamera}
+          onFileUpload={handleFileSelect}
         />
       )}
     />
@@ -117,6 +147,7 @@ export interface RecorderOverlayProps {
   facingMode: FacingMode;
   isFrontCamera: boolean;
   onSwitchCamera: () => void;
+  onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 function RecorderOverlay({
@@ -130,11 +161,13 @@ function RecorderOverlay({
   facingMode,
   isFrontCamera,
   onSwitchCamera,
+  onFileUpload,
 }: RecorderOverlayProps) {
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stopRecordingRef = useRef(stopRecording);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isRecording = status === "recording";
   const isStopped = status === "stopped";
@@ -316,14 +349,32 @@ function RecorderOverlay({
         <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
           <div className="flex gap-3">
             {!isRecording && !isStopped && (
-              <Button
-                onClick={handleStartRecording}
-                variant="destructive"
-                size="lg"
-                className="flex-1 h-14 text-base"
-              >
-                {hasError ? "Try Again" : "Start Recording"}
-              </Button>
+              <>
+                <Button
+                  onClick={handleStartRecording}
+                  variant="destructive"
+                  size="lg"
+                  className="flex-1 h-14 text-base"
+                >
+                  {hasError ? "Try Again" : "Start Recording"}
+                </Button>
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="secondary"
+                  size="icon"
+                  className="h-14 w-14 shrink-0 bg-background/60 backdrop-blur-sm"
+                  title="Upload Video"
+                >
+                  <UploadIcon className="h-6 w-6" />
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={onFileUpload}
+                />
+              </>
             )}
 
             {isRecording && (
