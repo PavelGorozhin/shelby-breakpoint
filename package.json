@@ -18,7 +18,7 @@
     "@aptos-labs/gas-station-client": "^2.0.3",
     "@aptos-labs/siwa": "^0.5.2",
     "@aptos-labs/ts-sdk": "^5.1.5",
-    "@aptos-labs/wallet-adapter-react": "^7.2.3",
+    "@aptos-labs/wallet-adapter-react": "^7.2.4",
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
