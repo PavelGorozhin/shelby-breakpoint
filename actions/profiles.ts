@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { verifyRecaptcha } from "@/actions/recaptcha";
+import { validateSession } from "./auth";
 
 export type GetProfileParams = {
   walletAddress: string;
@@ -21,7 +22,6 @@ export async function getProfile(params: GetProfileParams) {
 }
 
 export type SaveProfileParams = {
-  walletAddress: string;
   username?: string | null;
   bio?: string | null;
   email?: string | null;
@@ -32,7 +32,6 @@ export type SaveProfileParams = {
 
 export async function saveProfile(params: SaveProfileParams) {
   const {
-    walletAddress,
     username,
     bio,
     email,
@@ -40,6 +39,8 @@ export async function saveProfile(params: SaveProfileParams) {
     marketingOptIn,
     recaptchaToken,
   } = params;
+
+  const { address } = await validateSession();
 
   // Verify reCAPTCHA if token is provided
   if (recaptchaToken) {
@@ -50,7 +51,7 @@ export async function saveProfile(params: SaveProfileParams) {
   }
 
   // Check if profile exists
-  const existing = await getProfile({ walletAddress });
+  const existing = await getProfile({ walletAddress: address });
 
   if (existing) {
     // Update existing profile
@@ -64,7 +65,7 @@ export async function saveProfile(params: SaveProfileParams) {
         marketingOptIn: marketingOptIn ?? false,
         updatedAt: new Date(),
       })
-      .where(eq(profiles.walletAddress, walletAddress))
+      .where(eq(profiles.walletAddress, address))
       .returning();
 
     return updated;
@@ -73,7 +74,7 @@ export async function saveProfile(params: SaveProfileParams) {
     const [created] = await db
       .insert(profiles)
       .values({
-        walletAddress,
+        walletAddress: address,
         username,
         bio,
         email,

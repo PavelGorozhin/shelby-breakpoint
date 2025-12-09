@@ -24,11 +24,13 @@ import { toast } from "sonner";
 import useProfile from "@/queries/useProfile";
 import useVideos from "@/queries/useVideos";
 import useSaveProfile from "@/mutations/useSaveProfile";
+import useSignOut from "@/mutations/useSignOut";
 import Link from "next/link";
 import { useRecaptcha } from "@/providers/RecaptchaProvider";
+import Loader from "@/components/ui/loader";
 
 export default function ProfilePage() {
-  const { account, connected, disconnect } = useWallet();
+  const { account, connected } = useWallet();
   const router = useRouter();
   const params = useParams<{ address?: string[] }>();
   const [copied, setCopied] = useState(false);
@@ -39,6 +41,7 @@ export default function ProfilePage() {
   const [editMarketingOptIn, setEditMarketingOptIn] = useState(false);
   const [editXHandle, setEditXHandle] = useState("");
   const { executeRecaptcha } = useRecaptcha();
+  const { mutate: signOut } = useSignOut();
 
   // Get address from path params, or use connected wallet address
   // params.address is an array for catch-all routes: /profile/0x123 -> ['0x123']
@@ -83,7 +86,6 @@ export default function ProfilePage() {
     }
 
     saveProfile({
-      walletAddress: connectedAddress,
       username: editUsername || null,
       bio: editBio || null,
       email: editEmail || null,
@@ -183,11 +185,11 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => disconnect()}
+                    onClick={() => signOut()}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span className="sr-only">Disconnect wallet</span>
+                    <span className="sr-only">Sign out</span>
                   </Button>
                 </>
               )}
@@ -251,7 +253,7 @@ export default function ProfilePage() {
           // Loading state
           <div className="flex items-center justify-center flex-1 min-h-[300px]">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-8 h-8 border-2 border-muted border-t-foreground rounded-full animate-spin" />
+              <Loader size="md" />
               <p className="text-muted-foreground">Loading videos...</p>
             </div>
           </div>

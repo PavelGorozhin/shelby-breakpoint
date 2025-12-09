@@ -13,6 +13,7 @@ import { CheckIcon, PlayIcon } from "@radix-ui/react-icons";
 import { VideoRecorder } from "@/components/video-recorder";
 import { toast } from "sonner";
 import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
+import Loader from "@/components/ui/loader";
 
 type Step = "record" | "preview" | "uploading" | "complete";
 type UploadProgress = "processing" | "uploading" | "saving";
@@ -51,7 +52,7 @@ export default function Upload() {
 
       // Step 2: Upload to Shelby
       setUploadProgress("uploading");
-      const expirationMicros = (Date.now() + 60 * 60 * 1000) * 1000;
+      const expirationMicros = (Date.now() + 14 * 24 * 60 * 60 * 1000) * 1000; // 14 days
       const blobName = `${fileId}/video.mp4`;
       await uploadBlobs({
         blobs: [{ blobName, blobData }],
@@ -63,7 +64,6 @@ export default function Upload() {
       const url = createShelbyDownloadURL(accountAddress, blobName);
       await saveVideo({
         fileId,
-        account: accountAddress,
         url,
         description,
         email,
@@ -172,7 +172,7 @@ export default function Upload() {
                   </p>
                   <div className="aspect-9/16 max-h-[60vh] bg-card rounded-lg flex items-center justify-center mx-auto">
                     <div className="text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                      <Loader size="lg" className="mx-auto mb-3" />
                       <p className="text-muted-foreground text-sm">
                         {getUploadProgressMessage(uploadProgress)}
                       </p>

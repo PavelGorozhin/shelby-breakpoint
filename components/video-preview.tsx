@@ -14,6 +14,7 @@ import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { useState } from "react";
 import { Textarea } from "./ui/textarea";
+import Loader from "./ui/loader";
 
 interface VideoPreviewProps {
   mediaBlobUrl: string;
@@ -98,7 +99,7 @@ export function VideoPreview({
         >
           {isProcessing ? (
             <>
-              <ReloadIcon className="w-5 h-5 mr-2 animate-spin" />
+              <Loader size="md" className="mr-2" />
               {processingLabel}
             </>
           ) : (

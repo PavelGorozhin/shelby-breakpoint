@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/WalletProvider";
 import { WalletDialogProvider } from "@/providers/WalletDialogProvider";
+import AuthenticationDialog from "@/components/authentication-dialog";
 import { RecaptchaProvider } from "@/providers/RecaptchaProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@/providers/QueryClientProvider";
@@ -43,6 +44,7 @@ export default function RootLayout({
                     {children}
                   </main>
                 </div>
+                <AuthenticationDialog />
               </WalletDialogProvider>
             </WalletProvider>
           </QueryClientProvider>

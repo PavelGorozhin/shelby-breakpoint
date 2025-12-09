@@ -5,17 +5,15 @@ import { toast } from "sonner";
 
 export type UseLikeVariables = {
   videoId: number;
-  walletAddress: string;
 };
 
 export default function useLike() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ videoId, walletAddress }: UseLikeVariables) =>
-      toggleLike({ videoId, walletAddress }),
-    onMutate: async ({ videoId, walletAddress }) => {
-      const queryKey = getLikeStatusQueryKey(videoId, walletAddress);
+    mutationFn: ({ videoId }: UseLikeVariables) => toggleLike({ videoId }),
+    onMutate: async ({ videoId }) => {
+      const queryKey = getLikeStatusQueryKey(videoId);
 
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey });
@@ -40,10 +38,10 @@ export default function useLike() {
       }
       toast.error("Failed to update like");
     },
-    onSettled: (_data, _error, { videoId, walletAddress }) => {
+    onSettled: (_data, _error, { videoId }) => {
       // Refetch after mutation
       queryClient.invalidateQueries({
-        queryKey: getLikeStatusQueryKey(videoId, walletAddress),
+        queryKey: getLikeStatusQueryKey(videoId),
       });
     },
   });

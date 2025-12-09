@@ -25,10 +25,7 @@ export function VideoActions({ video }: VideoActionsProps) {
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Fetch like status
-  const { data: likeStatus } = useLikeStatus({
-    videoId: video.id,
-    walletAddress,
-  });
+  const { data: likeStatus } = useLikeStatus({ videoId: video.id });
 
   // Toggle like mutation with optimistic updates
   const { mutate: toggleLike } = useLike();
@@ -44,7 +41,7 @@ export function VideoActions({ video }: VideoActionsProps) {
       openWalletDialog();
       return;
     }
-    toggleLike({ videoId: video.id, walletAddress });
+    toggleLike({ videoId: video.id });
   };
 
   const isLiked = likeStatus?.isLiked ?? false;

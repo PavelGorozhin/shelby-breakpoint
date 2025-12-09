@@ -4,10 +4,11 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { videos } from "@/db/schema";
 import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
+import { validateSession } from "./auth";
+import { AccountAddress } from "@aptos-labs/ts-sdk";
 
 export type SaveVideoParams = {
   fileId: string;
-  account: string;
   url: string;
   description: string;
   email: string;
@@ -27,6 +28,8 @@ function extractAccountFromShelbyURL(url: string): string | null {
 }
 
 export async function saveVideo(params: SaveVideoParams) {
+  const { address } = await validateSession();
+
   // 1. Validate URL is a Shelby URL and extract account from it
   const accountFromURL = extractAccountFromShelbyURL(params.url);
 
@@ -35,23 +38,26 @@ export async function saveVideo(params: SaveVideoParams) {
   }
 
   // 2. Verify the account parameter matches the account in the URL
-  if (accountFromURL !== params.account) {
+  if (
+    !AccountAddress.from(accountFromURL).equals(AccountAddress.from(address))
+  ) {
     throw new Error(
-      `Account mismatch: account parameter ${params.account} does not match account in URL ${accountFromURL}`
+      `Account mismatch: account parameter ${address} does not match account in URL ${accountFromURL}`
     );
   }
 
   // 3. Now check if the validated account is in the allowlist
   if (
     UPLOAD_ALLOWLIST_ADDRESSES.length > 0 &&
-    !UPLOAD_ALLOWLIST_ADDRESSES.includes(params.account)
+    !UPLOAD_ALLOWLIST_ADDRESSES.includes(address)
   ) {
-    throw new Error(
-      `Account address ${params.account} is not authorized to upload`
-    );
+    throw new Error(`Account address ${address} is not authorized to upload`);
   }
 
-  const [video] = await db.insert(videos).values(params).returning();
+  const [video] = await db
+    .insert(videos)
+    .values({ ...params, account: address })
+    .returning();
 
   return video;
 }

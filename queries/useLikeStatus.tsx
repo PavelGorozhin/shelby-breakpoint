@@ -1,10 +1,10 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { getLikeStatus, type LikeStatus } from "@/actions/likes";
 
-export const getLikeStatusQueryKey = (
-  videoId: number,
-  walletAddress?: string
-) => ["likeStatus", videoId, walletAddress];
+export const getLikeStatusQueryKey = (videoId: number) => [
+  "likeStatus",
+  videoId,
+];
 
 export type UseLikeStatusParams = {
   videoId: number;
@@ -17,12 +17,12 @@ export type UseLikeStatusOptions = Omit<
 >;
 
 export default function useLikeStatus(
-  { videoId, walletAddress }: UseLikeStatusParams,
+  { videoId }: UseLikeStatusParams,
   options?: UseLikeStatusOptions
 ) {
   return useQuery({
-    queryKey: getLikeStatusQueryKey(videoId, walletAddress),
-    queryFn: () => getLikeStatus({ videoId, walletAddress }),
+    queryKey: getLikeStatusQueryKey(videoId),
+    queryFn: () => getLikeStatus({ videoId }),
     ...options,
   });
 }
