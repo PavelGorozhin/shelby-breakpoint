@@ -32,7 +32,7 @@ export const startSignInLegacy = async (address: string) => {
   const requestHeaders = await headers();
   const host = requestHeaders.get("host");
   if (!host || !ALLOWED_HOSTS.includes(host)) {
-    throw new Error("Host is not allowed to authenticate");
+    throw new Error(`Host "${host}" is not allowed to authenticate`);
   }
 
   const nonce = generateNonce();
