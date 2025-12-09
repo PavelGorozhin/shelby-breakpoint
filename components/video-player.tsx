@@ -133,7 +133,7 @@ export function VideoPlayer({ video, isActive = true }: VideoPlayerProps) {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
-    if (videoElement.paused) {
+    if (!isPlaying) {
       videoElement.play().catch((error) => {
         console.log("Play prevented:", error);
       });
