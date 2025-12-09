@@ -1,5 +1,6 @@
-import { VideoPlayer } from "@/components/video-player";
 import { getVideos } from "@/actions/videos";
+import ClientOnly from "@/components/client-only";
+import VideoCarousel from "@/components/video-carousel";
 
 export default async function Home({
   searchParams,
@@ -10,10 +11,10 @@ export default async function Home({
   const { id } = await searchParams;
 
   return (
-    <div className="flex-1 overflow-hidden pb-16 md:pb-0 flex justify-center">
-      <div className="w-full md:max-w-md lg:max-w-lg h-full md:py-8 py-0">
-        <VideoPlayer videos={videos} initialVideoId={id} />
-      </div>
+    <div className=" overflow-hidden pb-16 md:pb-0 flex md:items-center justify-center">
+      <ClientOnly>
+        <VideoCarousel initialData={videos} initialVideoId={id} />
+      </ClientOnly>
     </div>
   );
 }

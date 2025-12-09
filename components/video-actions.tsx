@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Share2 } from "lucide-react";
+import { Heart, Play, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ import GeometricAvatar from "./geometric-avatar";
 
 interface VideoActionsProps {
   video: Video;
+  isPlaying?: boolean;
 }
 
-export function VideoActions({ video }: VideoActionsProps) {
+export function VideoActions({ video, isPlaying = false }: VideoActionsProps) {
   const router = useRouter();
   const { account, connected } = useWallet();
   const { openWalletDialog } = useWalletDialog();
@@ -54,8 +55,19 @@ export function VideoActions({ video }: VideoActionsProps) {
 
   return (
     <>
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200 z-10",
+          isPlaying ? "opacity-0" : "opacity-100"
+        )}
+      >
+        <div className="bg-black/40 rounded-full p-4 backdrop-blur-sm">
+          <Play className="w-8 h-8 text-primary fill-primary" />
+        </div>
+      </div>
+
       {/* Description overlay - above controls */}
-      <div className="absolute bottom-24 left-0 right-16 px-4 z-10 pointer-events-none">
+      <div className="absolute bottom-32 left-2 right-16 px-4 z-10 pointer-events-none">
         {video.description && (
           <p className="text-white text-sm drop-shadow-lg line-clamp-3">
             {video.description}
