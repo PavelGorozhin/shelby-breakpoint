@@ -37,8 +37,8 @@ export default async function Home({
             return videos;
           }}
         />
+        <CommunicationMethodsDialog />
       </ClientOnly>
-      <CommunicationMethodsDialog />
     </div>
   );
 }

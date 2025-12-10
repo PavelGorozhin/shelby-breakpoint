@@ -162,7 +162,7 @@ export default function CommunicationMethodsDialog() {
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleSkip}>
             Skip
           </Button>
