@@ -35,7 +35,9 @@ export default function VideoCarousel({
   seed = generateSeed(),
   onLoadMore,
 }: VideoCarouselProps) {
-  const [videos, setVideos] = useState<Video[]>(initialData ?? defaultVideos);
+  const [videos, setVideos] = useState<Video[]>(
+    initialData && initialData.length > 0 ? initialData : defaultVideos
+  );
   const scrollListenerRef = useRef<() => void>(() => undefined);
   const listenForScrollRef = useRef(true);
   const hasMoreToLoadRef = useRef(true);

@@ -338,6 +338,16 @@ export default function ProfilePage() {
                 {editBio.length}/200 characters
               </p>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="x_handle">X (Twitter) handle</Label>
+              <Input
+                id="x_handle"
+                type="text"
+                placeholder="Your X (Twitter) handle"
+                value={editXHandle}
+                onChange={(e) => setEditXHandle(e.target.value)}
+              />
+            </div>
             <p className="text-md text-muted-foreground">
               Communication methods
             </p>
@@ -349,21 +359,21 @@ export default function ProfilePage() {
               Will not be shared with anyone else.
             </p>
             <div className="text-sm text-muted-foreground">
-              <p>How the contest works:</p>
+              <p>How to participate in the "Lights. Camera. Serve." Contest</p>
               <ul className="list-disc pl-5">
-                <li>
-                  Watch and like up to{" "}
-                  <span className="font-bold">five videos</span> in the app
-                </li>
+                <li>Watch and engage with videos in the app</li>
                 <li>Must live in an eligible country for shipping</li>
                 <li>
+                  See{" "}
                   <a
                     href="https://shelby.xyz/contest-rules.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="underline hover:text-foreground"
                   >
-                    See terms of the contest and eligibility requirements
-                  </a>
+                    Contest Rules
+                  </a>{" "}
+                  for full terms and eligibility
                 </li>
               </ul>
             </div>
@@ -371,21 +381,11 @@ export default function ProfilePage() {
               <p>What you can win:</p>
               <ul className="list-disc pl-5">
                 <li>
-                  Exclusive Shelby Merch Bundle: sweatshirt, t-shirt, mug, tote
-                  bag, notebook, stickers
+                  Shelby Merch Bundle: sweatshirt, t-shirt, mug, tote bag,
+                  notebook, stickers
                 </li>
-                <li>Professional Creator Kit: Mics, camera, and other gear</li>
+                <li>Professional creator gear: mics, camera, lighting</li>
               </ul>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="x_handle">X (Twitter) handle</Label>
-              <Input
-                id="x_handle"
-                type="text"
-                placeholder="Your X (Twitter) handle"
-                value={editXHandle}
-                onChange={(e) => setEditXHandle(e.target.value)}
-              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -403,9 +403,6 @@ export default function ProfilePage() {
                   }
                 }}
               />
-              <p className="text-xs text-muted-foreground">
-                Used for notifications and updates.
-              </p>
             </div>
             <div className="flex items-start space-x-3 pt-2">
               <Checkbox
@@ -420,7 +417,26 @@ export default function ProfilePage() {
                   htmlFor="marketing"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  Receive marketing emails
+                  I AGREE TO RECEIVE UPDATES FROM SHELBY FOUNDATION AND
+                  UNDERSTAND I CAN UNSUBSCRIBE AT ANY TIME, AND I HAVE READ AND
+                  ACCEPT THE{" "}
+                  <a
+                    href="https://shelby.xyz/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground"
+                  >
+                    PRIVACY POLICY
+                  </a>{" "}
+                  AND{" "}
+                  <a
+                    href="https://shelby.xyz/contest-rules.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground"
+                  >
+                    CONTEST RULES
+                  </a>
                 </Label>
               </div>
             </div>
@@ -432,7 +448,13 @@ export default function ProfilePage() {
             >
               Cancel
             </Button>
-            <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
+            <Button
+              onClick={handleSaveProfile}
+              disabled={
+                isSavingProfile ||
+                (!!(editEmail || editXHandle) && !editMarketingOptIn)
+              }
+            >
               {isSavingProfile ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>

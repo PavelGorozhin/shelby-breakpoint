@@ -7,7 +7,6 @@ import {
   MediaTimeRange,
   MediaMuteButton,
 } from "media-chrome/react";
-import HLS from "hls.js";
 import { Video } from "@/db/schema";
 import { VideoActions } from "@/components/video-actions";
 
@@ -45,75 +44,146 @@ export const defaultVideos: Video[] = [
 interface VideoPlayerProps {
   video: Video;
   isActive?: boolean;
+  authToken?: string;
 }
 
-export function VideoPlayer({ video, isActive = true }: VideoPlayerProps) {
+export function VideoPlayer({
+  video,
+  isActive = true,
+  authToken,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<HLS | null>(null);
   const isActiveRef = useRef(isActive);
   const [isPlaying, setIsPlaying] = useState(isActive);
+  const mediaSourceUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
 
-  // Setup HLS.js for .m3u8 streams or regular video (TODO: Replace with Shaka)
+  // Setup video source
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement || !video) return;
 
-    const url = video.url;
-    const isHLS = url.endsWith(".m3u8");
-
-    // Cleanup previous HLS instance
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
+    // Cleanup previous MediaSource URL
+    if (mediaSourceUrlRef.current) {
+      URL.revokeObjectURL(mediaSourceUrlRef.current);
+      mediaSourceUrlRef.current = null;
     }
 
-    if (isHLS && HLS.isSupported()) {
-      const hls = new HLS();
-      hlsRef.current = hls;
-      hls.loadSource(url);
-      hls.attachMedia(videoElement);
-      hls.on(HLS.Events.MANIFEST_PARSED, () => {
-        if (isActiveRef.current) {
-          videoElement.play().catch((error) => {
-            console.log("Autoplay prevented:", error);
+    // If auth token is provided, use MediaSource to stream with authorization header
+    if (authToken) {
+      const controller = new AbortController();
+      const mediaSource = new MediaSource();
+      const mediaSourceUrl = URL.createObjectURL(mediaSource);
+      mediaSourceUrlRef.current = mediaSourceUrl;
+      videoElement.src = mediaSourceUrl;
+
+      mediaSource.addEventListener("sourceopen", async () => {
+        // Determine MIME type from URL extension
+        const extension = video.url.split(".").pop()?.toLowerCase();
+        const mimeType =
+          extension === "webm"
+            ? 'video/webm; codecs="vp8, vorbis"'
+            : 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+
+        if (!MediaSource.isTypeSupported(mimeType)) {
+          console.error("MIME type not supported:", mimeType);
+          return;
+        }
+
+        const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
+
+        try {
+          const response = await fetch(video.url, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+            signal: controller.signal,
           });
+
+          if (!response.ok) throw new Error("Failed to fetch video");
+          if (!response.body) throw new Error("No response body");
+
+          const reader = response.body.getReader();
+
+          const processStream = async () => {
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) {
+                // Wait for any pending updates before ending the stream
+                if (sourceBuffer.updating) {
+                  await new Promise((resolve) =>
+                    sourceBuffer.addEventListener("updateend", resolve, {
+                      once: true,
+                    })
+                  );
+                }
+                if (mediaSource.readyState === "open") {
+                  mediaSource.endOfStream();
+                }
+                break;
+              }
+
+              // Wait if sourceBuffer is still updating
+              if (sourceBuffer.updating) {
+                await new Promise((resolve) =>
+                  sourceBuffer.addEventListener("updateend", resolve, {
+                    once: true,
+                  })
+                );
+              }
+
+              sourceBuffer.appendBuffer(value);
+            }
+          };
+
+          processStream();
+
+          // Start playback once we have some data
+          sourceBuffer.addEventListener(
+            "updateend",
+            () => {
+              if (isActiveRef.current && videoElement.paused) {
+                videoElement.play().catch((error) => {
+                  console.log("Autoplay prevented:", error);
+                });
+              }
+            },
+            { once: true }
+          );
+        } catch (error) {
+          if (error instanceof Error && error.name !== "AbortError") {
+            console.error("Error loading video:", error);
+          }
         }
       });
-    } else if (
-      isHLS &&
-      videoElement.canPlayType("application/vnd.apple.mpegurl")
-    ) {
-      // Native HLS support (Safari)
-      videoElement.src = url;
-      videoElement.addEventListener("loadedmetadata", () => {
-        if (isActiveRef.current) {
-          videoElement.play().catch((error) => {
-            console.log("Autoplay prevented:", error);
-          });
-        }
-      });
-    } else {
-      // Regular video file
-      videoElement.src = url;
-      videoElement.load();
-      if (isActiveRef.current) {
-        videoElement.play().catch((error) => {
-          console.log("Autoplay prevented:", error);
-        });
-      }
+
+      return () => {
+        controller.abort();
+      };
     }
 
+    // No auth token - use direct URL
+    videoElement.src = video.url;
+    videoElement.load();
+    if (isActiveRef.current) {
+      videoElement.play().catch((error) => {
+        console.log("Autoplay prevented:", error);
+      });
+    }
+  }, [video, authToken]);
+
+  // Cleanup MediaSource URL on unmount
+  useEffect(() => {
     return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
+      if (mediaSourceUrlRef.current) {
+        URL.revokeObjectURL(mediaSourceUrlRef.current);
       }
     };
-  }, [video]);
+  }, []);
 
   // Handle play/pause based on isActive prop
   useEffect(() => {
