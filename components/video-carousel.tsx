@@ -7,34 +7,39 @@ import { EmblaCarouselType, EngineType } from "embla-carousel";
 import { VideoPlayer, defaultVideos } from "./video-player";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Loader from "./ui/loader";
+import { VIDEO_PAGE_SIZE } from "@/lib/constants";
+import { generateSeed } from "@/lib/random";
 
 export interface VideoCarouselProps {
   initialData?: Video[];
   initialVideoId?: string;
-  onLoadMore?: () => void;
+  /**
+   * Seed for randomized video order - ensures consistent pagination
+   */
+  seed?: number;
+  /**
+   * Callback to load more videos (required for infinite scroll)
+   *
+   * @returns A promise that resolves to an array of videos
+   */
+  onLoadMore?: (params: {
+    limit: number;
+    offset: number;
+    seed: number;
+  }) => Promise<Video[]>;
 }
-
-const mockApiCall = (
-  minWait: number,
-  maxWait: number,
-  callback: () => void
-): void => {
-  const min = Math.ceil(minWait);
-  const max = Math.floor(maxWait);
-  const wait = Math.floor(Math.random() * (max - min + 1)) + min;
-  setTimeout(callback, wait);
-};
 
 export default function VideoCarousel({
   initialData,
   initialVideoId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  seed = generateSeed(),
   onLoadMore,
 }: VideoCarouselProps) {
   const [videos, setVideos] = useState<Video[]>(initialData ?? defaultVideos);
   const scrollListenerRef = useRef<() => void>(() => undefined);
   const listenForScrollRef = useRef(true);
   const hasMoreToLoadRef = useRef(true);
+  const videosLengthRef = useRef(videos.length); // This is needed since `videos` will be stale in the onScroll closure
   const [hasMoreToLoad, setHasMoreToLoad] = useState(true);
   const [, setLoadingMore] = useState(false);
   const [emblaApi, setEmblaApi] = useState<EmblaCarouselType>();
@@ -69,42 +74,48 @@ export default function VideoCarousel({
     };
   }, [emblaApi, initialIndex]);
 
-  const onScroll = useCallback((emblaApi: EmblaCarouselType) => {
-    if (!listenForScrollRef.current) return;
+  const onLoadMoreVideos = useCallback(
+    async (emblaApi: EmblaCarouselType) => {
+      const res =
+        (await onLoadMore?.({
+          limit: VIDEO_PAGE_SIZE,
+          offset: videosLengthRef.current,
+          seed,
+        })) ?? [];
 
-    setLoadingMore((loadingMore) => {
-      const lastSlide = emblaApi.slideNodes().length - 1;
-      const lastSlideInView = emblaApi.slidesInView().includes(lastSlide);
-      const loadMore =
-        !loadingMore && lastSlideInView && listenForScrollRef.current;
-
-      if (loadMore) {
-        listenForScrollRef.current = false;
-
-        // TODO: Replace with real API call
-        mockApiCall(1000, 2000, () => {
-          setVideos((currentVideos) => {
-            if (currentVideos.length >= 20) {
-              setHasMoreToLoad(false);
-              emblaApi.off("scroll", scrollListenerRef.current);
-              return currentVideos;
-            }
-
-            // For now, duplicate default videos with unique IDs for infinite scroll demo
-            const newVideos = defaultVideos.map((video, i) => ({
-              ...video,
-              id: currentVideos.length + i,
-              fileId: `${video.fileId}-${currentVideos.length + i}`,
-            }));
-
-            return [...currentVideos, ...newVideos];
-          });
-        });
+      if (res.length === 0) {
+        setHasMoreToLoad(false);
+        emblaApi?.off("scroll", scrollListenerRef.current);
+        return;
       }
 
-      return loadingMore || lastSlideInView;
-    });
-  }, []);
+      videosLengthRef.current += res.length;
+      setVideos((currentVideos) => [...currentVideos, ...res]);
+    },
+    [onLoadMore, seed]
+  );
+
+  const onScroll = useCallback(
+    (emblaApi: EmblaCarouselType) => {
+      if (!listenForScrollRef.current) return;
+
+      setLoadingMore((loadingMore) => {
+        const lastSlide = emblaApi.slideNodes().length - 1;
+        const lastSlideInView = emblaApi.slidesInView().includes(lastSlide);
+        const loadMore =
+          !loadingMore && lastSlideInView && listenForScrollRef.current;
+
+        if (loadMore) {
+          listenForScrollRef.current = false;
+
+          onLoadMoreVideos(emblaApi);
+        }
+
+        return loadingMore || lastSlideInView;
+      });
+    },
+    [onLoadMoreVideos]
+  );
 
   const addScrollListener = useCallback(
     (emblaApi: EmblaCarouselType) => {

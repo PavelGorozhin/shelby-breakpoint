@@ -3,7 +3,8 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { videos } from "@/db/schema";
-import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
+import { UPLOAD_ALLOWLIST_ADDRESSES, VIDEO_PAGE_SIZE } from "@/lib/constants";
+import { shuffleWithSeed } from "@/lib/random";
 import { validateSession } from "./auth";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
 
@@ -74,4 +75,51 @@ export async function getVideos(params: GetVideosParams = {}) {
   }
 
   return db.select().from(videos);
+}
+
+export type GetRandomVideosParams = {
+  seed: number;
+  limit?: number;
+  offset?: number;
+  account?: string;
+  /**
+   * If provided, this video (by fileId) will be placed first in the results
+   */
+  prioritizeFileId?: string;
+};
+
+/**
+ * Get videos in a randomized order using a seed for consistent pagination
+ * The seed ensures the same shuffle order across multiple requests
+ */
+export async function getRandomVideos(
+  params: GetRandomVideosParams
+): Promise<{ videos: Awaited<ReturnType<typeof getVideos>>; seed: number }> {
+  const {
+    seed,
+    limit = VIDEO_PAGE_SIZE,
+    offset = 0,
+    account,
+    prioritizeFileId,
+  } = params;
+
+  const allVideos = account
+    ? await db.select().from(videos).where(eq(videos.account, account))
+    : await db.select().from(videos);
+
+  // Find and extract priority video if specified
+  const priorityIndex = prioritizeFileId
+    ? allVideos.findIndex((v) => v.fileId === prioritizeFileId)
+    : -1;
+  const priorityVideo =
+    priorityIndex !== -1 ? allVideos.splice(priorityIndex, 1)[0] : null;
+
+  // Shuffle remaining videos, prepend priority video if found
+  const shuffled = shuffleWithSeed(allVideos, seed);
+  const orderedVideos = priorityVideo ? [priorityVideo, ...shuffled] : shuffled;
+
+  return {
+    videos: orderedVideos.slice(offset, offset + limit),
+    seed,
+  };
 }

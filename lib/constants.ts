@@ -7,6 +7,9 @@ export const ALLOWED_HOSTS =
   process.env.NEXT_PUBLIC_ALLOWED_HOSTS?.split(",") ||
   (isDevelopment ? ["localhost:3000"] : []);
 
+// Pagination
+export const VIDEO_PAGE_SIZE = 20;
+
 // JWT Signing
 export const JWT_SECRET =
   process.env.JWT_SECRET ||
