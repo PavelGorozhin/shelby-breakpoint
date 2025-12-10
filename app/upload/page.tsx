@@ -40,13 +40,11 @@ export default function Upload() {
       fileId,
       accountAddress,
       description,
-      email,
     }: {
       mediaBlobUrl: string;
       fileId: string;
       accountAddress: string;
       description: string;
-      email: string;
     }) => {
       // Step 1: Fetch the raw video blob
       setUploadProgress("processing");
@@ -68,7 +66,6 @@ export default function Upload() {
         fileId,
         url,
         description,
-        email,
       });
 
       return { fileId, url };
@@ -99,7 +96,7 @@ export default function Upload() {
   };
 
   // Handle process and upload
-  const handleProcessAndUpload = (description: string, email: string) => {
+  const handleProcessAndUpload = (description: string) => {
     if (!mediaBlobUrl || !fileId || !account?.address) return;
 
     // Check if the account address is in the upload allowlist
@@ -117,7 +114,6 @@ export default function Upload() {
       fileId,
       accountAddress: account.address.toString(),
       description,
-      email,
     });
   };
 
@@ -144,8 +140,8 @@ export default function Upload() {
         <div className="h-fit p-4 pb-24">
           <div className="w-full md:max-w-md lg:max-w-lg h-full mx-auto flex flex-col gap-6">
             <VideoUploadForm
-              onConfirm={(description: string, email: string) =>
-                handleProcessAndUpload(description, email)
+              onConfirm={(description: string) =>
+                handleProcessAndUpload(description)
               }
               onRetake={handleRetake}
               isProcessing={isProcessing}

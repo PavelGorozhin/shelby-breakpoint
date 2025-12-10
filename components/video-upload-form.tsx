@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Loader from "@/components/ui/loader";
 
 interface VideoUploadFormProps {
-  onConfirm: (description: string, email: string) => void;
+  onConfirm: (description: string) => void;
   onRetake: () => void;
   isProcessing?: boolean;
   processingLabel?: string;
@@ -25,7 +25,6 @@ export function VideoUploadForm({
   children,
 }: VideoUploadFormProps) {
   const [description, setDescription] = useState("");
-  const [email, setEmail] = useState("");
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -64,25 +63,6 @@ export function VideoUploadForm({
             This will be displayed to viewers.
           </p>
         </div>
-
-        <div className="space-y-2">
-          <label className="font-gt-planar font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Email{" "}
-            <span className="text-xs text-muted-foreground font-normal">
-              (Private)
-            </span>
-          </label>
-          <Input
-            placeholder="your@email.com"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 text-sm"
-          />
-          <p className="text-xs text-muted-foreground">
-            This email will be used to notify you of any updates.
-          </p>
-        </div>
       </div>
 
       <div className="flex-1" />
@@ -99,7 +79,7 @@ export function VideoUploadForm({
           Retake
         </Button>
         <Button
-          onClick={() => onConfirm(description, email)}
+          onClick={() => onConfirm(description)}
           size="lg"
           className="flex-1"
           disabled={isProcessing}
