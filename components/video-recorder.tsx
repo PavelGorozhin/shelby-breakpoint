@@ -18,7 +18,7 @@ const ReactMediaRecorder = dynamic(
   { ssr: false }
 );
 
-const MAX_RECORDING_TIME_SECONDS = 10;
+const MAX_RECORDING_TIME_SECONDS = 60;
 
 type FacingMode = "user" | "environment";
 
@@ -240,13 +240,11 @@ function RecorderOverlay({
 
   return (
     <div className="flex flex-1 flex-col h-full">
-      {/* Video Preview - fills available space */}
-      <div className="relative flex-1 bg-card rounded-lg overflow-hidden">
-        {/* Live preview - always rendered to prevent flickering */}
+      <div className="relative flex-1 bg-card md:rounded-lg overflow-hidden">
         <video
           ref={videoPreviewRef}
           className={cn(
-            "absolute inset-0 w-full h-full object-cover",
+            "absolute inset-0 w-full h-full object-cover opacity-100",
             isFrontCamera && "scale-x-[-1]",
             previewStream && !isStopped ? "opacity-100" : "opacity-0"
           )}
@@ -255,9 +253,7 @@ function RecorderOverlay({
           playsInline
         />
 
-        {/* Top overlay - Status & Camera switch */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-start justify-between z-10">
-          {/* Recording indicator or Status */}
           {isRecording ? (
             <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
               <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
@@ -273,32 +269,7 @@ function RecorderOverlay({
               </span>
             </div>
           )}
-
-          {/* Camera switch button */}
-          {!isStopped && !isRecording && (
-            <button
-              onClick={onSwitchCamera}
-              className="w-10 h-10 bg-background/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background/80 transition-colors"
-              title={`Switch to ${
-                facingMode === "user" ? "back" : "front"
-              } camera`}
-            >
-              <UpdateIcon className="w-5 h-5 text-foreground" />
-            </button>
-          )}
         </div>
-
-        {/* Recorded video playback */}
-        {isStopped && mediaBlobUrl && (
-          <video
-            src={mediaBlobUrl}
-            className="absolute inset-0 w-full h-full object-cover z-10"
-            controls
-            autoPlay
-            loop
-            playsInline
-          />
-        )}
 
         {/* Placeholder when no preview */}
         {!previewStream && !mediaBlobUrl && (
@@ -321,80 +292,120 @@ function RecorderOverlay({
           </div>
         )}
 
-        {/* Bottom overlay - Progress bar when recording */}
-        {isRecording && (
-          <div className="absolute bottom-20 left-4 right-4 z-10">
-            <div className="w-full bg-background/40 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-destructive h-full transition-all duration-1000"
-                style={{
-                  width: `${
-                    (recordingTime / MAX_RECORDING_TIME_SECONDS) * 100
-                  }%`,
-                }}
+        {/* Bottom controls overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-8 pb-16 md:pb-8 z-10 flex items-center justify-center">
+          {!isStopped && (
+            <div className="relative flex items-center justify-center w-full">
+              {!isRecording && (
+                <>
+                  <div className="absolute left-0">
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      variant="secondary"
+                      size="icon"
+                      className="h-12 w-12 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/80"
+                      title="Upload Video"
+                    >
+                      <UploadIcon className="h-5 w-5" />
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={onFileSelect}
+                    />
+                  </div>
+                  <div className="absolute right-0">
+                    <Button
+                      onClick={onSwitchCamera}
+                      variant="secondary"
+                      size="icon"
+                      className="h-12 w-12 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/80"
+                      title={`Switch to ${
+                        facingMode === "user" ? "back" : "front"
+                      } camera`}
+                    >
+                      <UpdateIcon className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              <ShutterButton
+                isRecording={isRecording}
+                progress={recordingTime}
+                max={MAX_RECORDING_TIME_SECONDS}
+                onClick={isRecording ? stopRecording : handleStartRecording}
               />
             </div>
-          </div>
-        )}
-
-        {/* Bottom controls overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-          <div className="flex gap-3">
-            {!isRecording && !isStopped && (
-              <>
-                <Button
-                  onClick={handleStartRecording}
-                  variant="destructive"
-                  size="lg"
-                  className="flex-1 h-14 text-base"
-                >
-                  {hasError ? "Try Again" : "Start Recording"}
-                </Button>
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  variant="secondary"
-                  size="icon"
-                  className="h-14 w-14 shrink-0 bg-background/60 backdrop-blur-sm"
-                  title="Upload Video"
-                >
-                  <UploadIcon className="h-6 w-6" />
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={onFileSelect}
-                />
-              </>
-            )}
-
-            {isRecording && (
-              <Button
-                onClick={stopRecording}
-                variant="destructive"
-                size="lg"
-                className="flex-1 h-14 text-base"
-              >
-                Stop ({formatTime(MAX_RECORDING_TIME_SECONDS - recordingTime)})
-              </Button>
-            )}
-
-            {isStopped && !hasError && (
-              <Button
-                onClick={() => {
-                  clearBlobUrl();
-                }}
-                variant="outline"
-                size="lg"
-                className="flex-1 h-14 text-base bg-background/60 backdrop-blur-sm"
-              >
-                Record Again
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface ShutterButtonProps {
+  isRecording: boolean;
+  progress: number;
+  max: number;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+function ShutterButton({
+  isRecording,
+  progress,
+  max,
+  onClick,
+  disabled,
+}: ShutterButtonProps) {
+  const size = 80;
+  const strokeWidth = 4;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progressPercent = Math.min(progress / max, 1);
+  const dashOffset = circumference - progressPercent * circumference;
+
+  return (
+    <div className="relative w-20 h-20 flex items-center justify-center">
+      <svg
+        className="absolute inset-0 transform -rotate-90 pointer-events-none"
+        width={size}
+        height={size}
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          className="stroke-muted/20 fill-none"
+          strokeWidth={strokeWidth}
+        />
+        {isRecording && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className="stroke-destructive fill-none transition-all duration-1000 ease-linear"
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+          />
+        )}
+      </svg>
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          "relative z-10 flex items-center justify-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          isRecording
+            ? "w-8 h-8 rounded-sm bg-primary"
+            : "w-16 h-16 rounded-full bg-primary border-4 border-background shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+        )}
+        aria-label={isRecording ? "Stop Recording" : "Start Recording"}
+      />
     </div>
   );
 }

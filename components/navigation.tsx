@@ -45,7 +45,7 @@ export function Navigation() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <nav className="hidden md:flex flex-col items-center py-6 px-2 bg-sidebar border-r border-sidebar-border w-[72px] shrink-0">
+      <nav className="hidden md:flex flex-col items-center py-6 px-2 bg-sidebar border-r border-sidebar-border w-[72px] shrink-0 font-gt-planar">
         {/* Logo */}
         <button
           onClick={() => router.push("/")}
@@ -120,7 +120,7 @@ export function Navigation() {
               {item.isUpload ? (
                 <div className="relative">
                   <div className="absolute inset-0 bg-linear-to-r from-primary to-destructive rounded-md blur-sm opacity-75" />
-                  <div className="relative flex items-center justify-center w-11 h-7 bg-primary-foreground rounded-md">
+                  <div className="relative flex items-center justify-center w-11 h-7 bg-card rounded-md">
                     <Icon className="w-4 h-4 text-primary" strokeWidth={2.5} />
                   </div>
                 </div>

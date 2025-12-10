@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { VideoPreview } from "@/components/video-preview";
+import { VideoUploadForm } from "@/components/video-upload-form";
 import useWalletUploadBlobs from "@/mutations/useWalletUploadBlobs";
+import { VideoPreview } from "@/components/video-preview";
 import { createShelbyDownloadURL } from "@/lib/shelby";
 import { saveVideo } from "@/actions/videos";
 import { Button } from "@/components/ui/button";
-import { CheckIcon, PlayIcon } from "@radix-ui/react-icons";
+import { CheckIcon, PlayIcon, UploadIcon } from "@radix-ui/react-icons";
 import { VideoRecorder } from "@/components/video-recorder";
 import ClientOnly from "@/components/client-only";
 import { toast } from "sonner";
@@ -17,7 +18,7 @@ import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
 import Loader from "@/components/ui/loader";
 
 type Step = "record" | "preview" | "uploading" | "complete";
-type UploadProgress = "processing" | "uploading" | "saving";
+type UploadProgress = "processing" | "uploading";
 
 export default function Upload() {
   const [step, setStep] = useState<Step>("record");
@@ -25,6 +26,7 @@ export default function Upload() {
   const [mediaBlobUrl, setMediaBlobUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] =
     useState<UploadProgress>("processing");
+  const [description, setDescription] = useState("");
 
   const router = useRouter();
   const { account } = useWallet();
@@ -61,7 +63,6 @@ export default function Upload() {
       });
 
       // Step 3: Save to database (TODO: this is unsafe, validate later)
-      setUploadProgress("saving");
       const url = createShelbyDownloadURL(accountAddress, blobName);
       await saveVideo({
         fileId,
@@ -126,134 +127,131 @@ export default function Upload() {
         return "Processing...";
       case "uploading":
         return "Uploading to Shelby...";
-      case "saving":
-        return "Saving to database...";
     }
   }
 
-  // Full-screen layout for record and preview steps
-  const isFullScreenStep = step === "record" || step === "preview";
-
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Full-screen content for record/preview */}
-        {isFullScreenStep && (
-          <div className="md:flex-1 md:flex md:justify-center h-full ">
-            <div className="w-full md:max-w-md lg:max-w-lg flex flex-col p-4 pb-24 h-full overflow-scroll">
-              {step === "record" && (
-                <ClientOnly
-                  fallback={
-                    <div className="flex flex-col h-full">
-                      <div className="flex-1 bg-card rounded-lg animate-pulse" />
-                    </div>
-                  }
-                >
-                  <VideoRecorder onRecordingComplete={handleRecordingComplete} />
-                </ClientOnly>
-              )}
-
-              {step === "preview" && mediaBlobUrl && (
-                <VideoPreview
-                  mediaBlobUrl={mediaBlobUrl}
-                  onConfirm={(description: string, email: string) =>
-                    handleProcessAndUpload(description, email)
-                  }
-                  onRetake={handleRetake}
-                  isProcessing={isProcessing}
-                  processingLabel="Processing..."
-                />
-              )}
-            </div>
+    <div className="flex flex-col h-screen w-screen overflow-y-auto pb-8">
+      {step === "record" ? (
+        <div className="h-full w-full flex items-center justify-center md:p-8">
+          <div className="w-full md:max-w-md lg:max-w-lg h-full">
+            <ClientOnly>
+              <VideoRecorder onRecordingComplete={handleRecordingComplete} />
+            </ClientOnly>
           </div>
-        )}
-
-        {/* Regular layout for other steps */}
-        {!isFullScreenStep && (
-          <div className="flex-1 overflow-auto bg-background p-8 pb-20 md:pb-8 flex justify-center">
-            <div className="w-full md:max-w-md lg:max-w-lg space-y-6">
-              {/* Uploading Step */}
-              {step === "uploading" && (
-                <div className="space-y-4">
-                  <h2 className="text-foreground text-xl">Uploading Video</h2>
-                  <p className="text-muted-foreground text-sm">
+        </div>
+      ) : step === "preview" && mediaBlobUrl ? (
+        <div className="h-fit p-4 pb-24">
+          <div className="w-full md:max-w-md lg:max-w-lg h-full mx-auto flex flex-col gap-6">
+            <VideoUploadForm
+              onConfirm={(description: string, email: string) =>
+                handleProcessAndUpload(description, email)
+              }
+              onRetake={handleRetake}
+              isProcessing={isProcessing}
+              processingLabel="Processing..."
+              onDescriptionChange={setDescription}
+            >
+              <VideoPreview
+                mediaBlobUrl={mediaBlobUrl}
+                description={description}
+              />
+            </VideoUploadForm>
+          </div>
+        </div>
+      ) : step === "uploading" ? (
+        <div className="flex-1 h-full p-4 pb-24 overflow-y-auto">
+          <div className="w-full md:max-w-md lg:max-w-lg h-full mx-auto flex flex-col gap-6">
+            <div className="flex flex-col gap-4 h-full w-full bg-card rounded-lg p-6 border">
+              <div className="space-y-4 w-full">
+                <div>
+                  <h2 className="text-xl font-gt-planar font-bold mb-1">
+                    Uploading Video
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
                     {getUploadProgressMessage(uploadProgress)}
                   </p>
-                  <div className="aspect-9/16 max-h-[60vh] bg-card rounded-lg flex items-center justify-center mx-auto">
-                    <div className="text-center">
-                      <Loader size="lg" className="mx-auto mb-3" />
-                      <p className="text-muted-foreground text-sm">
-                        {getUploadProgressMessage(uploadProgress)}
-                      </p>
-                    </div>
+                </div>
+                <div className="aspect-9/16 bg-muted/20 rounded-lg flex items-center justify-center mx-auto w-full border-2 border-dashed border-muted">
+                  <div className="text-center">
+                    <Loader size="lg" className="mx-auto mb-3" />
+                    <p className="text-muted-foreground text-sm font-medium">
+                      {getUploadProgressMessage(uploadProgress)}
+                    </p>
                   </div>
                 </div>
-              )}
-
-              {/* Complete Step */}
-              {step === "complete" && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : step === "complete" ? (
+        <div className="h-fit p-4 pb-24">
+          <div className="w-full md:max-w-md lg:max-w-lg h-full mx-auto flex flex-col gap-6">
+            <div className="flex flex-col gap-4 w-full bg-card rounded-lg p-6 border">
+              <div className="space-y-4 w-full">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                       <CheckIcon className="w-5 h-5 text-primary-foreground" />
                     </div>
-                    <h2 className="text-foreground text-xl">
+                    <h2 className="text-xl font-gt-planar font-bold">
                       Upload Complete!
                     </h2>
                   </div>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Your video has been uploaded to Shelby.
                   </p>
-
-                  {/* Video Preview */}
-                  {mediaBlobUrl && (
-                    <div className="relative aspect-9/16 max-h-[50vh] bg-card rounded-lg overflow-hidden mx-auto">
-                      <video
-                        src={mediaBlobUrl}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => {
-                        if (mediaBlobUrl) {
-                          URL.revokeObjectURL(mediaBlobUrl);
-                        }
-                        router.push(`/?id=${fileId}`);
-                      }}
-                      className="flex-1"
-                    >
-                      <PlayIcon className="w-4 h-4 mr-2" />
-                      Watch Video
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        if (mediaBlobUrl) {
-                          URL.revokeObjectURL(mediaBlobUrl);
-                        }
-                        setStep("record");
-                        setFileId(null);
-                        setMediaBlobUrl(null);
-                        setUploadProgress("processing");
-                      }}
-                      className="flex-1"
-                    >
-                      Upload Another
-                    </Button>
-                  </div>
                 </div>
-              )}
+
+                {/* Video Preview */}
+                {mediaBlobUrl && (
+                  <div className="relative aspect-9/16 bg-muted/20 rounded-lg overflow-hidden w-full border border-border">
+                    <video
+                      src={mediaBlobUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button
+                    onClick={() => {
+                      if (mediaBlobUrl) {
+                        URL.revokeObjectURL(mediaBlobUrl);
+                      }
+                      router.push(`/?id=${fileId}`);
+                    }}
+                    size="lg"
+                  >
+                    <PlayIcon className="w-4 h-4 mr-2" />
+                    Watch Video
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (mediaBlobUrl) {
+                        URL.revokeObjectURL(mediaBlobUrl);
+                      }
+                      setStep("record");
+                      setFileId(null);
+                      setMediaBlobUrl(null);
+                      setUploadProgress("processing");
+                    }}
+                    size="lg"
+                  >
+                    <UploadIcon className="w-4 h-4 mr-2" />
+                    Upload Another
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

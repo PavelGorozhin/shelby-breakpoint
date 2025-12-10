@@ -4,112 +4,88 @@ import {
   MediaController,
   MediaControlBar,
   MediaTimeRange,
-  MediaTimeDisplay,
-  MediaPlayButton,
   MediaMuteButton,
 } from "media-chrome/react";
-import { Button } from "@/components/ui/button";
-import { ReloadIcon, CheckIcon } from "@radix-ui/react-icons";
-import { Input } from "./ui/input";
-import { Label } from "@radix-ui/react-dropdown-menu";
 import { useState } from "react";
-import { Textarea } from "./ui/textarea";
-import Loader from "./ui/loader";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface VideoPreviewProps {
   mediaBlobUrl: string;
-  onConfirm: (description: string, email: string) => void;
-  onRetake: () => void;
-  isProcessing?: boolean;
-  processingLabel?: string;
+  description?: string;
 }
 
 export function VideoPreview({
   mediaBlobUrl,
-  onConfirm,
-  onRetake,
-  isProcessing = false,
-  processingLabel = "Processing...",
+  description = "",
 }: VideoPreviewProps) {
-  const [description, setDescription] = useState("");
-  const [email, setEmail] = useState("");
-  return (
-    <div>
-      <div className="flex flex-col gap-3">
-        {/* Video Preview - fills available space */}
-        <div className="relative flex-1 bg-card rounded-lg overflow-hidden min-h-[300px] lg:min-h-0">
-          <MediaController className="w-full h-full" suppressHydrationWarning>
-            <video
-              slot="media"
-              src={mediaBlobUrl}
-              preload="auto"
-              playsInline
-              className="w-full h-full object-cover"
-            />
-            <MediaControlBar>
-              <MediaPlayButton />
-              <MediaTimeRange />
-              <MediaTimeDisplay showDuration />
-              <MediaMuteButton />
-            </MediaControlBar>
-          </MediaController>
+  const [isOpen, setIsOpen] = useState(false);
 
-          {/* Top overlay - Title */}
-          <div className="absolute top-0 left-0 right-0 p-4 z-10 pointer-events-none">
-            <div className="bg-background/60 backdrop-blur-sm px-3 py-1.5 rounded-full inline-block">
-              <span className="text-foreground text-sm">Review Recording</span>
+  return (
+    <>
+      {/* Thumbnail Trigger */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="relative w-24 aspect-9/16 bg-black rounded-lg overflow-hidden border-2 border-border cursor-zoom-in hover:border-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 mx-auto block group"
+      >
+        <video
+          src={mediaBlobUrl}
+          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+          muted
+          playsInline
+        />
+        <div className="absolute inset-0 bg-black/10 hover:bg-black/0 transition-colors" />
+      </button>
+
+      {/* Full Screen Preview Dialog */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none h-[80vh] w-full aspect-9/16">
+          <div className="hidden">
+            <DialogTitle>Video Preview</DialogTitle>
+            <DialogDescription>
+              Full screen preview of your recorded video with description
+              overlay.
+            </DialogDescription>
+          </div>
+
+          <div className="relative h-full w-full bg-black">
+            <MediaController
+              className="w-full h-full"
+              suppressHydrationWarning
+              autohide="-1"
+            >
+              <video
+                slot="media"
+                src={mediaBlobUrl}
+                preload="auto"
+                playsInline
+                muted
+                loop
+                webkit-playsinline="true"
+                x-webkit-airplay="allow"
+                crossOrigin=""
+                className="w-full h-full object-cover"
+                autoPlay
+              />
+              <MediaControlBar className="px-4 pb-8 gap-4 bg-linear-to-t from-black/80 via-black/40 to-transparent">
+                <MediaTimeRange className="bg-transparent" />
+                <MediaMuteButton className="bg-transparent px-2" />
+              </MediaControlBar>
+            </MediaController>
+
+            {/* Reflected Description */}
+            <div className="absolute bottom-24 left-4 right-4 z-10 pointer-events-none">
+              <p className="text-white text-sm drop-shadow-lg wrap-break-word line-clamp-3">
+                {description}
+              </p>
             </div>
           </div>
-        </div>
-
-        {/* Metadata */}
-        <div className="flex flex-col gap-3 mt-4 w-full lg:max-w-2xl lg:mx-auto">
-          <Textarea
-            rows={4}
-            placeholder="Add description..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <Label>Email (will not be shown publicly)</Label>
-          <Input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Bottom controls */}
-      <div className="flex gap-3 mt-4">
-        <Button
-          onClick={onRetake}
-          variant="outline"
-          size="lg"
-          className="flex-1 h-14 text-base"
-          disabled={isProcessing}
-        >
-          <ReloadIcon className="w-5 h-5 mr-2" />
-          Retake
-        </Button>
-        <Button
-          onClick={() => onConfirm(description, email)}
-          size="lg"
-          className="flex-1 h-14 text-base"
-          disabled={isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Loader size="md" className="mr-2" />
-              {processingLabel}
-            </>
-          ) : (
-            <>
-              <CheckIcon className="w-5 h-5 mr-2" />
-              Continue
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

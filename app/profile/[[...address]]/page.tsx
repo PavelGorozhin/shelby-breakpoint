@@ -153,7 +153,7 @@ export default function ProfilePage() {
     <div className="flex h-screen w-screen overflow-y-scroll bg-background justify-center">
       <div className="flex flex-col h-fit pb-20 md:pb-4 justify-center w-full md:max-w-2xl lg:max-w-4xl">
         {/* Profile Header */}
-        <div className="p-6 border-b border-border flex flex-col sm:flex-row h-fit items-center sm:items-start gap-4 sm:gap-6">
+        <div className="p-6 border-b border-border flex flex-col sm:flex-row h-fit items-center sm:items-start gap-4 sm:gap-6 font-gt-planar">
           {/* Avatar */}
           <div className="shrink-0">
             <GeometricAvatar size={80} name={profileAddress || "anonymous"} />
@@ -234,11 +234,9 @@ export default function ProfilePage() {
             </p>
 
             {/* Stats */}
-            <div className="flex items-center gap-4 mt-2 text-center sm:text-left">
-              <span className="text-foreground font-semibold">
-                {videos.length}
-              </span>
-              <span className="text-muted-foreground ml-1 text-sm">videos</span>
+            <div className="flex items-center gap-2 mt-2 text-center sm:text-left">
+              <span className="text-foreground font-bold">{videos.length}</span>
+              <span className="text-muted-foreground text-sm">videos</span>
             </div>
           </div>
         </div>
