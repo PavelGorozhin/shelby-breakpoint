@@ -12,7 +12,6 @@ export type SaveVideoParams = {
   fileId: string;
   url: string;
   description: string;
-  email: string;
 };
 
 // Helper to extract account from Shelby URL
