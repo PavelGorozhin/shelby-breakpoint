@@ -1,5 +1,6 @@
 import { getRandomVideos } from "@/actions/videos";
 import ClientOnly from "@/components/client-only";
+import CommunicationMethodsDialog from "@/components/communication-methods-dialog";
 import VideoCarousel from "@/components/video-carousel";
 import { VIDEO_PAGE_SIZE } from "@/lib/constants";
 import { generateSeed } from "@/lib/random";
@@ -22,7 +23,7 @@ export default async function Home({
   });
 
   return (
-    <div className=" overflow-hidden pb-16 md:pb-0 flex md:items-center justify-center">
+    <div className="overflow-hidden pb-16 md:pb-0 flex md:items-center justify-center">
       <ClientOnly>
         <VideoCarousel
           initialData={videos}
@@ -36,6 +37,7 @@ export default async function Home({
             return videos;
           }}
         />
+        <CommunicationMethodsDialog />
       </ClientOnly>
     </div>
   );
