@@ -358,6 +358,15 @@ export default function ProfilePage() {
                   <span className="font-bold">five videos</span> in the app
                 </li>
                 <li>Must live in an eligible country for shipping</li>
+                <li>
+                  <a
+                    href="https://shelby.xyz/contest-rules.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    See terms of the contest and eligibility requirements
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="text-sm text-muted-foreground">
