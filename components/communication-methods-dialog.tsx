@@ -19,20 +19,8 @@ import useSaveProfile from "@/mutations/useSaveProfile";
 import { useRecaptcha } from "@/providers/RecaptchaProvider";
 import { useWalletDialog } from "@/providers/WalletDialogProvider";
 
-// Cookie persists for 30 days so user doesn't see dialog repeatedly across sessions
-const COOKIE_NAME = "shelby_contest_dialog_dismissed";
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-  return match ? match[2] : null;
-}
-
-function setCookie(name: string, value: string, days: number = 30) {
-  const date = new Date();
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
-}
+// Session storage key - dialog won't show again until browser is closed
+const SESSION_KEY = "shelby_contest_dialog_dismissed";
 
 export default function CommunicationMethodsDialog() {
   const { account, connected } = useWallet();
@@ -60,7 +48,7 @@ export default function CommunicationMethodsDialog() {
 
   // Show dialog on initial load (with delay)
   useEffect(() => {
-    const hasDismissed = getCookie(COOKIE_NAME);
+    const hasDismissed = sessionStorage.getItem(SESSION_KEY);
     if (hasDismissed) return;
 
     // Wait for profile to load if connected
@@ -104,7 +92,7 @@ export default function CommunicationMethodsDialog() {
   ]);
 
   const handleSkip = () => {
-    setCookie(COOKIE_NAME, "true", 30);
+    sessionStorage.setItem(SESSION_KEY, "true");
     setIsOpen(false);
   };
 
