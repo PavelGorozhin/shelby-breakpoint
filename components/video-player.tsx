@@ -55,7 +55,7 @@ export function VideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const isActiveRef = useRef(isActive);
   const [isPlaying, setIsPlaying] = useState(isActive);
-  const mediaSourceUrlRef = useRef<string | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -66,103 +66,47 @@ export function VideoPlayer({
     const videoElement = videoRef.current;
     if (!videoElement || !video) return;
 
-    // Cleanup previous MediaSource URL
-    if (mediaSourceUrlRef.current) {
-      URL.revokeObjectURL(mediaSourceUrlRef.current);
-      mediaSourceUrlRef.current = null;
+    // Clean up previous blob URL
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
     }
 
-    // If auth token is provided, use MediaSource to stream with authorization header
+    // If auth token is provided, fetch with authorization header and use blob URL
     if (authToken) {
-      const controller = new AbortController();
-      const mediaSource = new MediaSource();
-      const mediaSourceUrl = URL.createObjectURL(mediaSource);
-      mediaSourceUrlRef.current = mediaSourceUrl;
-      videoElement.src = mediaSourceUrl;
+      const abortController = new AbortController();
 
-      mediaSource.addEventListener("sourceopen", async () => {
-        // Determine MIME type from URL extension
-        const extension = video.url.split(".").pop()?.toLowerCase();
-        const mimeType =
-          extension === "webm"
-            ? 'video/webm; codecs="vp8, vorbis"'
-            : 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
-
-        if (!MediaSource.isTypeSupported(mimeType)) {
-          console.error("MIME type not supported:", mimeType);
-          return;
-        }
-
-        const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
-
-        try {
-          const response = await fetch(video.url, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-            signal: controller.signal,
-          });
-
-          if (!response.ok) throw new Error("Failed to fetch video");
-          if (!response.body) throw new Error("No response body");
-
-          const reader = response.body.getReader();
-
-          const processStream = async () => {
-            while (true) {
-              const { done, value } = await reader.read();
-
-              if (done) {
-                // Wait for any pending updates before ending the stream
-                if (sourceBuffer.updating) {
-                  await new Promise((resolve) =>
-                    sourceBuffer.addEventListener("updateend", resolve, {
-                      once: true,
-                    })
-                  );
-                }
-                if (mediaSource.readyState === "open") {
-                  mediaSource.endOfStream();
-                }
-                break;
-              }
-
-              // Wait if sourceBuffer is still updating
-              if (sourceBuffer.updating) {
-                await new Promise((resolve) =>
-                  sourceBuffer.addEventListener("updateend", resolve, {
-                    once: true,
-                  })
-                );
-              }
-
-              sourceBuffer.appendBuffer(value);
-            }
-          };
-
-          processStream();
-
-          // Start playback once we have some data
-          sourceBuffer.addEventListener(
-            "updateend",
-            () => {
-              if (isActiveRef.current && videoElement.paused) {
-                videoElement.play().catch((error) => {
-                  console.log("Autoplay prevented:", error);
-                });
-              }
-            },
-            { once: true }
-          );
-        } catch (error) {
-          if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Error loading video:", error);
+      fetch(video.url, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        signal: abortController.signal,
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch video: ${response.status}`);
           }
-        }
-      });
+          return response.blob();
+        })
+        .then((blob) => {
+          const blobUrl = URL.createObjectURL(blob);
+          blobUrlRef.current = blobUrl;
+          videoElement.src = blobUrl;
+          videoElement.load();
+          if (isActiveRef.current) {
+            videoElement.play().catch((error) => {
+              console.log("Autoplay prevented:", error);
+            });
+          }
+        })
+        .catch((error) => {
+          if (error.name !== "AbortError") {
+            console.error("Error loading video with auth:", error);
+          }
+        });
 
       return () => {
-        controller.abort();
+        abortController.abort();
       };
     }
 
@@ -176,11 +120,11 @@ export function VideoPlayer({
     }
   }, [video, authToken]);
 
-  // Cleanup MediaSource URL on unmount
+  // Clean up blob URL on unmount
   useEffect(() => {
     return () => {
-      if (mediaSourceUrlRef.current) {
-        URL.revokeObjectURL(mediaSourceUrlRef.current);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
     };
   }, []);

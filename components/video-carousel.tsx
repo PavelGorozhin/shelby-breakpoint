@@ -201,7 +201,11 @@ export default function VideoCarousel({
             key={`${video.fileId}-${index}`}
             className="md:basis-full md:py-12 h-full"
           >
-            <VideoPlayer video={video} isActive={index === activeIndex} />
+            <VideoPlayer
+              video={video}
+              isActive={index === activeIndex}
+              authToken={"AG-9NWLSXCAX4PXFY4FKMPDON5ZLEGPUBNRX"}
+            />
           </CarouselItem>
         ))}
         {hasMoreToLoad && (
