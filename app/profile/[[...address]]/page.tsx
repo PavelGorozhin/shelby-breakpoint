@@ -384,7 +384,7 @@ export default function ProfilePage() {
                   Shelby Merch Bundle: sweatshirt, t-shirt, mug, tote bag,
                   notebook, stickers
                 </li>
-                <li>Professional creator gear: mics, camera, lighting</li>
+                <li>DJI Osmo Pocket 3 Creator Combo + accessories</li>
               </ul>
             </div>
             <div className="grid gap-2">
