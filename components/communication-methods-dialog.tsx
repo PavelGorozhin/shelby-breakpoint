@@ -107,7 +107,7 @@ export default function CommunicationMethodsDialog() {
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle>"Lights. Camera. Serve." Contest</DialogTitle>
+          <DialogTitle>&quot;Lights. Camera. Serve.&quot; Contest</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4 overflow-y-auto flex-1">
           <p className="text-sm text-muted-foreground">

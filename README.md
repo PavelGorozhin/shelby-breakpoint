@@ -58,13 +58,6 @@ A Next.js project with Turso LibSQL database and Drizzle ORM, configured for Ver
 - `npm run db:push` - Push schema changes directly to database (development)
 - `npm run db:studio` - Open Drizzle Studio to view and edit your database
 
-## Example API
-
-An example API route is available at `/api/users` that demonstrates:
-
-- `GET /api/users` - Fetch all users
-- `POST /api/users` - Create a new user
-
 ## Deploy on Vercel
 
 1. Push your code to GitHub
