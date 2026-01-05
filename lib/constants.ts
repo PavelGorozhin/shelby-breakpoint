@@ -1,10 +1,13 @@
 import { isDevelopment } from "./environment";
 
 export const UPLOAD_ALLOWLIST_ADDRESSES =
-  process.env.NEXT_PUBLIC_UPLOAD_ALLOWLIST_ADDRESSES?.split(",") || [];
+  (process.env.NEXT_PUBLIC_UPLOAD_ALLOWLIST_ADDRESSES &&
+    process.env.NEXT_PUBLIC_UPLOAD_ALLOWLIST_ADDRESSES?.split(",")) ||
+  [];
 
 export const ALLOWED_HOSTS =
-  process.env.NEXT_PUBLIC_ALLOWED_HOSTS?.split(",") ||
+  (process.env.NEXT_PUBLIC_ALLOWED_HOSTS &&
+    process.env.NEXT_PUBLIC_ALLOWED_HOSTS?.split(",")) ||
   (isDevelopment ? ["localhost:3000"] : []);
 
 // Pagination

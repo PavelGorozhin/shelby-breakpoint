@@ -16,6 +16,7 @@ import ClientOnly from "@/components/client-only";
 import { toast } from "sonner";
 import { UPLOAD_ALLOWLIST_ADDRESSES } from "@/lib/constants";
 import Loader from "@/components/ui/loader";
+import Link from "next/link";
 
 type Step = "record" | "preview" | "uploading" | "complete";
 type UploadProgress = "processing" | "uploading";
@@ -60,7 +61,6 @@ export default function Upload() {
         expirationMicros,
       });
 
-      // Step 3: Save to database (TODO: this is unsafe, validate later)
       const url = createShelbyDownloadURL(accountAddress, blobName);
       await saveVideo({
         fileId,
@@ -73,7 +73,51 @@ export default function Upload() {
     onSuccess: () => setStep("complete"),
     onError: (error) => {
       console.error("Upload failed:", error);
-      toast.error(error.message || "Upload failed. Please try again.");
+      // The gas station sponsor is out of funds.
+      if (
+        error.message.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE") &&
+        error.message.includes("sponsor")
+      ) {
+        const sponsorAddress = error.message
+          .split("sponsor: ")[1]
+          .split(",")[0]
+          .trim();
+        toast.error(
+          <div>
+            The sponsor does not have enough APT to cover the transaction fee.
+            Please fund with APT at{" "}
+            <Link
+              href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${sponsorAddress}`}
+              target="_blank"
+              className="underline text-primary font-bold"
+            >
+              https://docs.shelby.xyz/apis/faucet/aptos?address=
+              {sponsorAddress}
+            </Link>{" "}
+          </div>
+        );
+        // The user does not have enough ShelbyUSD
+      } else if (
+        error.message.includes("E_INSUFFICIENT_FUNDS") &&
+        error.message.includes("Move abort")
+      ) {
+        toast.error(
+          <div>
+            The user does not have enough ShelbyUSD to cover the transaction
+            fee. Please fund with ShelbyUSD at{" "}
+            <Link
+              href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${account?.address}`}
+              target="_blank"
+              className="underline text-primary font-bold"
+            >
+              https://docs.shelby.xyz/apis/faucet/shelbyusd?address=
+              {account?.address?.toString()}
+            </Link>{" "}
+          </div>
+        );
+      } else {
+        toast.error(error.message || "Upload failed. Please try again.");
+      }
       setStep("preview");
     },
   });
@@ -101,7 +145,10 @@ export default function Upload() {
 
     // Check if the account address is in the upload allowlist
     const accountAddress = account.address.toString();
-    if (!UPLOAD_ALLOWLIST_ADDRESSES.includes(accountAddress)) {
+    if (
+      UPLOAD_ALLOWLIST_ADDRESSES.length > 0 &&
+      !UPLOAD_ALLOWLIST_ADDRESSES.includes(accountAddress)
+    ) {
       toast.error(
         `Account address ${accountAddress} is not in the upload allowlist`
       );
